@@ -129,7 +129,7 @@ export default function Hero() {
     absolute
     left-0
     right-0
-    bottom-[12%]
+    bottom-[18%]
     z-10
 
     overflow-hidden
@@ -158,21 +158,21 @@ export default function Hero() {
 
         <div
           className="
-            profile-image
-            absolute
-            bottom-0
-            left-1/2
-            -translate-x-1/2
-            z-20
+    profile-image
+    absolute
+    bottom-0
+    left-1/2
+    -translate-x-1/2
+    z-20
 
-            w-[130vw]
-            max-w-none
+    w-[175vw]
+    max-w-none
 
-            sm:w-[105vw]
+    sm:w-[125vw]
 
-            md:w-[62vw]
-            md:max-w-[950px]
-          "
+    md:w-[62vw]
+    md:max-w-[950px]
+  "
         >
           <Image
             src="/images/profile.png"
@@ -180,7 +180,7 @@ export default function Hero() {
             width={1200}
             height={1200}
             priority
-            className="block h-auto w-full"
+            className="block h-auto w-full object-bottom"
           />
         </div>
 
