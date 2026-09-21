@@ -154,21 +154,22 @@ export default function Hero() {
           Portfolio
         </div>
 
-{/* ================= PROFILE IMAGE ================= */}
+        {/* ================= PROFILE IMAGE ================= */}
 
-<div
-  className="
+        <div
+          className="
     profile-image
     absolute
-    bottom-0
+    bottom-[-4%]
     left-1/2
     -translate-x-1/2
     z-20
 
-    w-[150vw]
+    w-[210vw]
     max-w-none
 
-    sm:w-[95vw]
+    sm:bottom-0
+    sm:w-[110vw]
 
     md:w-[65vw]
     md:max-w-[950px]
@@ -176,18 +177,16 @@ export default function Hero() {
     lg:w-[58vw]
     lg:max-w-[1100px]
   "
->
-  <Image
-    src="/images/profile.png"
-    alt="MO - Frontend Developer"
-    width={1200}
-    height={1200}
-    priority
-    className="block h-auto w-full object-contain object-bottom"
-  />
-</div>
-        {/* ================= FRONTEND DEVELOPER ================= */}
-
+        >
+          <Image
+            src="/images/profile.png"
+            alt="MO - Frontend Developer"
+            width={1200}
+            height={1200}
+            priority
+            className="block h-auto w-full object-contain object-bottom"
+          />
+        </div>
         {/* ================= FRONTEND DEVELOPER ================= */}
 
         <div
