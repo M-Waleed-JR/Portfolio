@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+/* =========================================
+   HERO ANIMATIONS
+========================================= */
+
+@keyframes portfolioDrop {
+  0% {
+    transform: translateY(-120px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes profileRise {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes developerAppear {
+  0% {
+    transform: translateX(-40px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes scrollBounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(5px);
+  }
+}
+
+/* =========================================
+   PORTFOLIO
+========================================= */
+
+.portfolio-title {
+  opacity: 0;
+
+  animation: portfolioDrop 1.3s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
+}
+
+/* =========================================
+   PROFILE
+========================================= */
+
+.profile-image {
+  opacity: 0;
+
+  animation: profileRise 1.5s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards;
+}
+
+/* =========================================
+   DEVELOPER
+========================================= */
+
+.developer-text {
+  opacity: 0;
+
+  animation: developerAppear 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.9s forwards;
+}
+
+/* =========================================
+   SCROLL
+========================================= */
+
+.scroll-arrow {
+  animation: scrollBounce 1.5s ease-in-out infinite;
+}
