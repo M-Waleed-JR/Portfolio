@@ -2,6 +2,13 @@
 
 import Image from "next/image";
 
+import { Montserrat } from "next/font/google";
+
+const portfolioFont = Montserrat({
+  subsets: ["latin"],
+  weight: ["800"],
+});
+
 export default function Hero() {
   return (
     <section className="relative min-h-[100svh] overflow-hidden bg-[#030303] text-white">
@@ -122,34 +129,33 @@ export default function Hero() {
 
       <div className="relative min-h-[100svh] w-full">
         {/* ================= PORTFOLIO ================= */}
-
         <div
-          className="
+          className={`
+    ${portfolioFont.className}
     portfolio-title
+    pointer-events-none
+    select-none
     absolute
     left-0
     right-0
-    bottom-[18%]
+    bottom-[15%]
     z-10
 
     overflow-hidden
     whitespace-nowrap
 
     text-center
-    text-[18.5vw]
-    font-bold
-    uppercase
-    leading-none
-    tracking-[-0.02em]
-
-    text-white/[0.105]
+    text-[24vw]
+    leading-[1.1]
+    tracking-[-0.05em]
 
     sm:bottom-[8%]
-    sm:text-[19vw]
+    sm:text-[21vw]
+    sm:tracking-[-0.03em]
 
-    md:bottom-[10%]
-    md:text-[16vw]
-  "
+    md:bottom-[6%]
+    md:text-[21vw]
+  `}
         >
           Portfolio
         </div>
@@ -174,8 +180,11 @@ export default function Hero() {
     md:w-[65vw]
     md:max-w-[950px]
 
-    lg:w-[58vw]
-    lg:max-w-[1100px]
+    lg:w-[66vw]
+    lg:max-w-[1250px]
+
+    xl:w-[68vw]
+    xl:max-w-[1400px]
   "
         >
           <Image

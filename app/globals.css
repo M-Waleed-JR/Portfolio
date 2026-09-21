@@ -6,13 +6,29 @@
 
 @keyframes portfolioDrop {
   0% {
-    transform: translateY(-120px);
+    transform: translateY(-120px) scaleY(var(--title-scale-y, 1));
     opacity: 0;
   }
 
   100% {
-    transform: translateY(0);
-    opacity: 1;
+    transform: translateY(0) scaleY(var(--title-scale-y, 1));
+    opacity: 0.45;
+  }
+}
+
+.portfolio-title {
+  --title-scale-y: 1.1;
+  transform-origin: bottom center;
+
+  opacity: 0;
+  animation: portfolioDrop 1.3s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
+
+  /* باقي الـ background والـ grain زي ما هما */
+}
+
+@media (min-width: 640px) {
+  .portfolio-title {
+    --title-scale-y: 1;
   }
 }
 
@@ -57,8 +73,15 @@
 
 .portfolio-title {
   opacity: 0;
-
   animation: portfolioDrop 1.3s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
+
+  /* لون الكلمة: رمادي شفاف + grain */
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.8 -0.3'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    linear-gradient(rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.12));
 }
 
 /* =========================================
@@ -67,7 +90,6 @@
 
 .profile-image {
   opacity: 0;
-
   animation: profileRise 1.5s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards;
 }
 
@@ -77,7 +99,6 @@
 
 .developer-text {
   opacity: 0;
-
   animation: developerAppear 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.9s forwards;
 }
 
