@@ -109,3 +109,418 @@
 .scroll-arrow {
   animation: scrollBounce 1.5s ease-in-out infinite;
 }
+
+/*===========================================
+  Card Scroll
+===========================================*/
+
+/*===========================================
+  Projects Carousel (2D arc, auto-drifting)
+===========================================*/
+
+.work-section {
+  --work-accent: #c4f36a;
+
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 100px 24px 64px;
+  color: #f5f5f5;
+  background: radial-gradient(
+    ellipse at 50% 55%,
+    #171a15 0%,
+    #090909 48%,
+    #050505 100%
+  );
+}
+
+.work-section::before {
+  position: absolute;
+  z-index: -1;
+  top: 55%;
+  left: 50%;
+  width: min(800px, 90vw);
+  aspect-ratio: 1;
+  content: "";
+  border-radius: 50%;
+  background: rgb(196 243 106 / 6%);
+  filter: blur(110px);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Heading */
+
+.work-heading {
+  position: relative;
+  z-index: 10;
+  margin: 0 auto 28px;
+  text-align: center;
+}
+
+.work-eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #aaa;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.28em;
+}
+
+.work-eyebrow > span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--work-accent);
+  box-shadow: 0 0 12px rgb(196 243 106 / 50%);
+}
+
+.work-heading h2 {
+  margin-top: 18px;
+  font-size: clamp(38px, 5.5vw, 68px);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.06em;
+}
+
+.work-heading h2 span {
+  color: var(--work-accent);
+}
+
+.work-heading > p {
+  margin-top: 15px;
+  color: #929292;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* Stage */
+
+.work-stage {
+  position: relative;
+  width: 100%;
+  height: 560px;
+  margin-inline: auto;
+  overflow: hidden;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+
+  /* تلاشي ناعم على الأطراف يمين وشمال */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    #000 12%,
+    #000 88%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    #000 12%,
+    #000 88%,
+    transparent 100%
+  );
+}
+
+.work-stage:active {
+  cursor: grabbing;
+}
+
+/* Card */
+
+.work-card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 400px; /* لازم يساوي DESKTOP.gap - 36 في الـ JSX */
+  overflow: hidden;
+  border: 1px solid #2c2c2c;
+  border-radius: 20px;
+  background: linear-gradient(150deg, #181818, #0b0b0b);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 45%);
+  will-change: transform, opacity;
+  transition:
+    border-color 300ms ease,
+    box-shadow 300ms ease;
+}
+
+.work-card:hover,
+.work-card.is-center {
+  border-color: color-mix(in srgb, var(--accent) 55%, #2c2c2c);
+}
+
+.work-card:hover {
+  box-shadow:
+    0 30px 80px rgb(0 0 0 / 55%),
+    0 0 50px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+/* اللينك اللي بيغطي الكارت كله */
+.work-card-link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+.work-preview {
+  position: relative;
+  overflow: hidden;
+  background: #181818;
+}
+
+.work-preview img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: top;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.work-card:hover .work-preview img {
+  transform: scale(1.05);
+}
+
+.work-preview-label {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  padding: 8px 11px;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #080808;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 250ms ease,
+    transform 250ms ease;
+  pointer-events: none;
+}
+
+.work-card:hover .work-preview-label {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Card content */
+
+.work-card-body {
+  padding: 20px 22px 18px;
+}
+
+.work-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: #8f8f8f;
+  font-size: 9px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.work-card-meta span:first-child {
+  color: var(--accent);
+}
+
+.work-card-body h3 {
+  margin-top: 10px;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+}
+
+.work-description {
+  min-height: 40px;
+  margin-top: 8px;
+  color: #a1a1a1;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.work-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.work-stack span {
+  padding: 5px 9px;
+  border: 1px solid #303030;
+  border-radius: 5px;
+  color: #d0d0d0;
+  font-size: 10px;
+}
+
+.work-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #292929;
+}
+
+.work-explore {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ededed;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.work-explore span {
+  color: var(--accent);
+  transition: transform 250ms ease;
+}
+
+.work-card:hover .work-explore span {
+  transform: translate(3px, -3px);
+}
+
+/* GitHub فوق اللينك الأساسي عشان يتدس عليه لوحده */
+.work-github {
+  position: relative;
+  z-index: 2;
+  padding: 6px 10px;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: #ededed;
+  font-size: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background 200ms ease,
+    color 200ms ease,
+    border-color 200ms ease;
+}
+
+.work-github:hover {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #080808;
+}
+
+/* Controls */
+
+.work-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.work-controls button {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid #383838;
+  border-radius: 50%;
+  background: #101010;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  transition:
+    color 200ms ease,
+    background 200ms ease,
+    border-color 200ms ease;
+}
+
+.work-controls button:hover {
+  border-color: var(--work-accent);
+  background: var(--work-accent);
+  color: #080808;
+}
+
+.work-controls button:focus-visible,
+.work-card a:focus-visible {
+  outline: 2px solid var(--work-accent);
+  outline-offset: 4px;
+}
+
+.work-hint {
+  margin-top: 22px;
+  color: #656565;
+  text-align: center;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+}
+
+.work-hint span {
+  padding-inline: 6px;
+  color: var(--work-accent);
+}
+
+/* Mobile */
+
+@media (max-width: 700px) {
+  .work-section {
+    padding: 78px 0 48px;
+  }
+
+  .work-heading {
+    padding-inline: 12px;
+  }
+
+  .work-stage {
+    height: 520px;
+  }
+
+  .work-card {
+    width: 270px; /* لازم يساوي MOBILE.gap - 26 في الـ JSX */
+    border-radius: 16px;
+  }
+
+  .work-card-body {
+    padding: 16px;
+  }
+
+  .work-card-body h3 {
+    font-size: 22px;
+  }
+
+  .work-description {
+    min-height: 0;
+  }
+
+  .work-preview-label {
+    opacity: 1;
+    transform: none;
+  }
+
+  .work-hint {
+    font-size: 8px;
+    letter-spacing: 0.08em;
+  }
+}
+
+@media (hover: none) {
+  .work-preview-label {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .work-card,
+  .work-preview img,
+  .work-preview-label,
+  .work-explore span {
+    transition: none;
+  }
+}
