@@ -1,0 +1,478 @@
+.section {
+  --void: #040405;
+  --bone: #f1ece4;
+  --ash: #9a958d;
+  --gold: #f0a85a;
+  --lagoon: #3fb5c0;
+  --line: rgba(241, 236, 228, 0.13);
+  --gutter: clamp(1.25rem, 5vw, 5rem);
+
+  position: relative;
+  isolation: isolate;
+  /* clip (not hidden): hidden would break the sticky stage */
+  overflow-x: clip;
+  background: var(--void);
+  color: var(--bone);
+}
+
+/* Warm light from the left, cool light from the right: same world as the hero. */
+.section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      55% 22% at 0% 8%,
+      rgba(240, 168, 90, 0.14),
+      transparent 70%
+    ),
+    radial-gradient(
+      50% 22% at 100% 38%,
+      rgba(63, 181, 192, 0.13),
+      transparent 70%
+    ),
+    radial-gradient(
+      55% 20% at 0% 78%,
+      rgba(240, 168, 90, 0.1),
+      transparent 70%
+    ),
+    radial-gradient(
+      50% 18% at 100% 98%,
+      rgba(63, 181, 192, 0.1),
+      transparent 70%
+    );
+}
+
+/* Film grain */
+.section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+.container {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding-inline: var(--gutter);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- 1. Pinned statement ---------- */
+
+.stage {
+  height: 260vh;
+}
+
+.sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  display: flex;
+  align-items: center;
+  padding-inline: var(--gutter);
+  overflow: hidden;
+}
+
+.ghost {
+  position: absolute;
+  left: 2vw;
+  bottom: -0.12em;
+  font-size: clamp(11rem, 38vw, 38rem);
+  font-weight: 800;
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+  color: rgba(241, 236, 228, 0.04);
+  user-select: none;
+  pointer-events: none;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.statementWrap {
+  position: relative;
+  max-width: 1240px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.statement {
+  margin: 0;
+  font-size: clamp(2.1rem, 6vw, 5.6rem);
+  font-weight: 700;
+  line-height: 1.07;
+  letter-spacing: -0.035em;
+  font-variation-settings: "wdth" 84;
+}
+
+.word {
+  --l: 0;
+  display: inline-block;
+  margin-right: 0.26em;
+  /* always visible at 60%, fully opaque when lit */
+  opacity: calc(0.6 + 0.4 * var(--l));
+  text-shadow:
+    /* inner sharp glow */
+    0 0 calc(var(--l) * 18px) rgba(240, 168, 90, var(--l)),
+    /* mid halo */ 0 0 calc(var(--l) * 45px)
+      rgba(240, 168, 90, calc(var(--l) * 0.65)),
+    /* outer ambient bloom */ 0 0 calc(var(--l) * 90px)
+      rgba(240, 168, 90, calc(var(--l) * 0.3));
+}
+
+.byline {
+  --n: 0;
+  margin: clamp(1.5rem, 3vw, 2.5rem) 0 0;
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  color: var(--gold);
+  opacity: var(--n);
+  transform: translateY(calc((1 - var(--n)) * 14px));
+}
+
+/* ---------- 2. Cards ---------- */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 1.25rem;
+  padding-block: clamp(2rem, 5vw, 4rem) clamp(5rem, 10vw, 9rem);
+}
+
+.card {
+  --mx: 50%;
+  --my: 50%;
+  --rx: 0deg;
+  --ry: 0deg;
+
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 1.5rem;
+  padding: clamp(1.5rem, 3vw, 2.25rem);
+  background: rgba(241, 236, 228, 0.025);
+  transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 0.25s ease-out;
+}
+
+/* Soft light inside the card, following the pointer */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  background: radial-gradient(
+    320px circle at var(--mx) var(--my),
+    rgba(240, 168, 90, 0.16),
+    transparent 65%
+  );
+}
+
+/* Bright edge following the pointer */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+  background: radial-gradient(
+    220px circle at var(--mx) var(--my),
+    rgba(240, 168, 90, 0.95),
+    transparent 70%
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+.card:hover::before,
+.card:hover::after {
+  opacity: 1;
+}
+
+.cEdu {
+  grid-column: 1 / span 5;
+}
+
+.cProjects {
+  grid-column: 6 / span 7;
+  grid-row: 1 / span 2;
+}
+
+.cGoal {
+  grid-column: 1 / span 5;
+}
+
+.cardLabel {
+  margin: 0 0 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--ash);
+}
+
+.cardMain {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  font-variation-settings: "wdth" 88;
+}
+
+.cardSub {
+  margin: 0;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  color: var(--ash);
+}
+
+.projects {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.projects li {
+  border-top: 1px solid var(--line);
+}
+
+.projects li:last-child {
+  border-bottom: 1px solid var(--line);
+}
+
+.projects a {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1.5rem;
+  padding: clamp(1rem, 2vw, 1.5rem) 0;
+  color: var(--bone);
+  text-decoration: none;
+  transition:
+    color 0.2s,
+    padding-left 0.25s;
+}
+
+.projects a:hover {
+  color: var(--gold);
+  padding-left: 0.75rem;
+}
+
+.pName {
+  font-size: clamp(1.6rem, 3vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-variation-settings: "wdth" 84;
+}
+
+.pTech {
+  font-size: 0.95rem;
+  color: var(--ash);
+}
+
+/* ---------- 3. Skills marquee ---------- */
+
+.skills {
+  padding-bottom: clamp(3rem, 6vw, 5rem);
+}
+
+.skillsTitle {
+  margin: 0;
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-variation-settings: "wdth" 84;
+}
+
+.rowBlock {
+  margin-top: clamp(1.75rem, 3.5vw, 3rem);
+}
+
+.rowLabel {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  max-width: 1320px;
+  margin: 0 auto 0.5rem;
+  padding-inline: var(--gutter);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--gold);
+}
+
+.rowLabel::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.viewport {
+  --skew: 0deg;
+  width: 100%;
+  overflow: hidden;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-y;
+  transform: skewX(var(--skew));
+}
+
+.viewport:active {
+  cursor: grabbing;
+}
+
+.track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+}
+
+.set {
+  display: flex;
+  flex: none;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  padding: 0.06em 0.45em 0.1em 0;
+  font-size: clamp(3.2rem, 10.5vw, 9.5rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  color: var(--bone);
+  font-variation-settings: "wdth" 76;
+  transition:
+    color 0.2s,
+    -webkit-text-stroke-color 0.2s;
+}
+
+/* Diamond separator between words */
+.item::after {
+  content: "";
+  flex: none;
+  width: 0.14em;
+  height: 0.14em;
+  margin-left: 0.2em;
+  background: var(--gold);
+  transform: rotate(45deg);
+}
+
+.outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(241, 236, 228, 0.55);
+}
+
+.item:hover {
+  color: var(--gold);
+  -webkit-text-stroke-color: var(--gold);
+}
+
+/* ---------- 4. Links ---------- */
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2.5rem;
+  padding-bottom: clamp(5rem, 9vw, 8rem);
+}
+
+.links a {
+  font-size: 1.0625rem;
+  font-weight: 500;
+  color: var(--bone);
+  text-decoration: underline;
+  text-decoration-color: var(--gold);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.35em;
+  transition: color 0.2s;
+}
+
+.links a:hover {
+  color: var(--gold);
+}
+
+.links a:focus-visible,
+.projects a:focus-visible {
+  outline: 2px solid var(--lagoon);
+  outline-offset: 4px;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 900px) {
+  .cEdu,
+  .cProjects,
+  .cGoal {
+    grid-column: 1 / -1;
+    grid-row: auto;
+  }
+
+  .stage {
+    height: 220vh;
+  }
+}
+
+@media (hover: none) {
+  .card {
+    transform: none;
+  }
+}
+
+/* ---------- Reduced motion: everything visible, nothing moves ---------- */
+
+.reduced .stage {
+  height: auto;
+}
+
+.reduced .sticky {
+  position: relative;
+  height: auto;
+  min-height: 70vh;
+  padding-block: 6rem;
+}
+
+.reduced .word {
+  --l: 1;
+  opacity: 1;
+}
+
+.reduced .byline {
+  --n: 1;
+}
+
+.reduced .card {
+  transform: none;
+  transition: none;
+}

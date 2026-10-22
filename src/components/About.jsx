@@ -1,474 +1,412 @@
 "use client";
 
-import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
-import { ArrowDown, ArrowUpRight } from "@/components/icons";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { Bricolage_Grotesque } from "next/font/google";
+import styles from "./About.module.css";
 
-/* -------------------------------------------------------------------------- */
-/*  Content (Truthful, verified from portfolio repositories & aboutMe.md)      */
-/* -------------------------------------------------------------------------- */
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  axes: ["opsz", "wdth"],
+  display: "swap",
+});
 
-const STATEMENT = ["I", "build", "interfaces", "that", "feel", "alive."];
+const STATEMENT = ` Hi iam Mohamed Waleed Jr Front-end developer , I build responsive interfaces with React and Next.js, and I care how every screen feels, from phone to desktop.`;
+const WORDS = STATEMENT.split(" ");
 
-const GITHUB = "https://github.com/M-Waleed-JR";
-
-const CURRENT_FACTS = [
+const GROUPS = [
   {
-    label: "Core Stack",
-    value: "React 19 & Next.js",
-    tags: ["React 19", "Next.js", "Tailwind CSS"],
+    name: "Core front-end",
+    items: [
+      "HTML5",
+      "CSS3",
+      "JavaScript ES6+",
+      "TypeScript",
+      "React",
+      "Next.js",
+      "Tailwind CSS",
+      "Responsive Design",
+    ],
   },
   {
-    label: "Current Focus",
-    value: "Production-ready web applications",
-    tags: ["Interactive UI", "State", "Responsive"],
+    name: "State and data",
+    items: [
+      "Redux Toolkit",
+      "Context API",
+      "Fetch API",
+      "Axios",
+      "REST APIs",
+      "Local Storage",
+    ],
   },
   {
-    label: "Deepening",
-    value: "TypeScript & App Router Architecture",
-    tags: ["TypeScript", "REST APIs"],
-  },
-];
-
-const STATS = [
-  {
-    value: 4,
-    suffix: "+",
-    label: "Projects Built",
-    description: "Nova, Gusto, Weather & To-do",
-    animate: true,
+    name: "3D and interactive",
+    items: ["Three.js", "React Three Fiber", "@react-three/drei"],
   },
   {
-    value: 4,
-    suffix: "/4",
-    label: "Live on Vercel",
-    description: "Tested, responsive & deployed",
-    animate: true,
+    name: "UI libraries",
+    items: [
+      "Material UI",
+      "Swiper",
+      "Lucide React",
+      "SweetAlert2",
+      "React Hot Toast",
+    ],
   },
   {
-    value: 2025,
-    suffix: "",
-    label: "Graduated",
-    description: "Computers & AI, Zagazig Univ",
-    animate: false,
-  },
-];
-
-const TIMELINE = [
-  {
-    year: "2021 — 2025",
-    title: "B.Sc. Computer Science",
-    institution: "Zagazig University",
-    description:
-      "Graduated from Faculty of Computers and Information with solid foundations in algorithms, data structures, and web technologies.",
-    tag: "Education",
-  },
-  {
-    year: "2025",
-    title: "First React & API Apps",
-    institution: "Weather & To-Do Apps",
-    description:
-      "Built interactive projects featuring REST API consumption, local storage persistence, filtering, and responsive Arabic RTL layout.",
-    tag: "Foundations",
-  },
-  {
-    year: "2026",
-    title: "Full-Scale Applications",
-    institution: "Nova & Gusto Platforms",
-    description:
-      "Architected Nova (e-commerce storefront with quick-view modal) and Gusto (restaurant landing platform built with Next.js).",
-    tag: "Production",
-  },
-  {
-    year: "Present",
-    title: "Junior Front-End Role",
-    institution: "Open for Opportunities",
-    description:
-      "Actively seeking my first junior front-end position to build elegant, high-performance web products with an engineering team.",
-    tag: "Available",
-    current: true,
+    name: "Tools",
+    items: ["Git", "GitHub", "Vite", "npm", "Vercel", "GitHub Pages"],
   },
 ];
 
-/* -------------------------------------------------------------------------- */
-/*  Hooks                                                                      */
-/* -------------------------------------------------------------------------- */
+const PROJECTS = [
+  {
+    name: "Nova",
+    tech: "Next.js, TypeScript,React.js, Tailwind CSS, Swiper, Lucide React",
+    href: "https://nova-jet-two.vercel.app/",
+  },
+  {
+    name: "Gusto",
+    tech: "Next.js, React 19, TypeScript, Tailwind CSS, Three.js, React Three Fiber",
+    href: "https://food-app-ruddy-omega.vercel.app/",
+  },
+  {
+    name: "Weather app",
+    tech: "React.js, Vite, Axios, REST API, Tailwind CSS",
+    href: "https://weather-app-opal-nine-repyfja5gb.vercel.app/",
+  },
+  {
+    name: "To-do list",
+    tech: "React 19, Vite, Material UI (MUI), Tailwind CSS, Local Storage, Arabic RTL",
+    href: "https://todo-list-eight-liart.vercel.app/",
+  },
+];
 
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false);
+const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
 
-  useEffect(() => {
-    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setReduced(query.matches);
+const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
 
-    update();
-    query.addEventListener("change", update);
-
-    return () => query.removeEventListener("change", update);
-  }, []);
-
-  return reduced;
+function subscribeReducedMotion(callback) {
+  const mq = window.matchMedia(REDUCED_QUERY);
+  mq.addEventListener("change", callback);
+  return () => mq.removeEventListener("change", callback);
 }
 
-/* Counts up once when the number scrolls into view. */
-function Counter({ value, suffix = "", animate, reduced }) {
-  const ref = useRef(null);
-  const [count, setCount] = useState(0);
+function getReducedMotion() {
+  return window.matchMedia(REDUCED_QUERY).matches;
+}
+
+function handleCard(e) {
+  const el = e.currentTarget;
+  const r = el.getBoundingClientRect();
+  const x = e.clientX - r.left;
+  const y = e.clientY - r.top;
+  el.style.setProperty("--mx", `${x}px`);
+  el.style.setProperty("--my", `${y}px`);
+  el.style.setProperty("--rx", `${(y / r.height - 0.5) * -5}deg`);
+  el.style.setProperty("--ry", `${(x / r.width - 0.5) * 7}deg`);
+}
+
+function resetCard(e) {
+  const el = e.currentTarget;
+  el.style.setProperty("--rx", "0deg");
+  el.style.setProperty("--ry", "0deg");
+}
+
+function SkillsRow({ group, index }) {
+  const isEven = index % 2 === 0;
+  const dir = isEven ? 1 : -1;
+
+  const trackRef = useRef(null);
+  const setRef = useRef(null);
+  const [width, setWidth] = useState(0);
+
+  const offsetRef = useRef(0);
+  const isHoveredRef = useRef(false);
+  const isDraggingRef = useRef(false);
+  const lastXRef = useRef(0);
+
+  const items =
+    group.items.length < 5 ? [...group.items, ...group.items] : group.items;
 
   useEffect(() => {
-    if (!animate || reduced) return;
+    const el = setRef.current;
+    if (!el) return;
 
-    const node = ref.current;
-    if (!node) return;
-
-    let frame = 0;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        observer.disconnect();
-
-        const duration = 1200;
-        const start = performance.now();
-
-        const tick = (now) => {
-          const t = Math.min(1, (now - start) / duration);
-          const eased = 1 - Math.pow(1 - t, 3);
-          setCount(Math.round(eased * value));
-          if (t < 1) frame = requestAnimationFrame(tick);
-        };
-
-        frame = requestAnimationFrame(tick);
-      },
-      { threshold: 0.5 },
-    );
-
-    observer.observe(node);
-
-    return () => {
-      observer.disconnect();
-      if (frame) cancelAnimationFrame(frame);
+    const measure = () => {
+      const w = el.offsetWidth;
+      if (w > 0) setWidth(w);
     };
-  }, [value, animate, reduced]);
+    measure();
+
+    const ro = new ResizeObserver(() => measure());
+    ro.observe(el);
+
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(measure);
+    }
+
+    return () => ro.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!width || width <= 0) return;
+
+    let rafId = 0;
+    let lastTime = performance.now();
+    // 50 seconds to complete 1 set loop (slow & uniform)
+    const speed = width / 50;
+
+    const updatePosition = () => {
+      if (trackRef.current && width > 0) {
+        const mod = ((offsetRef.current % width) + width) % width;
+        const pos = -2 * width + mod;
+        trackRef.current.style.transform = `translate3d(${pos}px,0,0)`;
+      }
+    };
+
+    const frame = (now) => {
+      const dt = Math.min((now - lastTime) / 1000, 0.1);
+      lastTime = now;
+
+      if (!isDraggingRef.current && !isHoveredRef.current) {
+        offsetRef.current += dir * speed * dt;
+        updatePosition();
+      }
+
+      rafId = requestAnimationFrame(frame);
+    };
+
+    updatePosition();
+    rafId = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(rafId);
+  }, [width, dir]);
+
+  const handlePointerDown = (e) => {
+    isDraggingRef.current = true;
+    lastXRef.current = e.clientX;
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {}
+  };
+
+  const handlePointerMove = (e) => {
+    if (!isDraggingRef.current) return;
+    const dx = e.clientX - lastXRef.current;
+    lastXRef.current = e.clientX;
+    offsetRef.current += dx;
+
+    if (trackRef.current && width > 0) {
+      const mod = ((offsetRef.current % width) + width) % width;
+      const pos = -2 * width + mod;
+      trackRef.current.style.transform = `translate3d(${pos}px,0,0)`;
+    }
+  };
+
+  const handlePointerUp = (e) => {
+    isDraggingRef.current = false;
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {}
+  };
+
+  const handlePointerEnter = () => {
+    isHoveredRef.current = true;
+  };
+
+  const handlePointerLeave = () => {
+    isHoveredRef.current = false;
+    isDraggingRef.current = false;
+  };
 
   return (
-    <span ref={ref}>
-      {!animate || reduced ? value : count}
-      {suffix}
-    </span>
+    <div className={styles.rowBlock}>
+      <h4 className={styles.rowLabel}>{group.name}</h4>
+      <div
+        className={styles.viewport}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+      >
+        <div className={styles.track} ref={trackRef}>
+          {[0, 1, 2, 3].map((copyIndex) => (
+            <ul
+              key={copyIndex}
+              className={styles.set}
+              ref={copyIndex === 0 ? setRef : undefined}
+              aria-hidden={copyIndex > 0 ? "true" : undefined}
+            >
+              {items.map((item, j) => (
+                <li
+                  key={`${item}-${copyIndex}-${j}`}
+                  className={`${styles.item} ${j % 2 === 1 ? styles.outline : ""}`}
+                >
+                  {item}
+                </li>
+              ))}
+            </ul>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Main Component                                                             */
-/* -------------------------------------------------------------------------- */
-
 export default function About() {
   const sectionRef = useRef(null);
-  const statementRef = useRef(null);
-  const spotRef = useRef(null);
+  const stageRef = useRef(null);
+  const ghostRef = useRef(null);
+  const nameRef = useRef(null);
+  const wordRefs = useRef([]);
+  const reduced = useSyncExternalStore(
+    subscribeReducedMotion,
+    getReducedMotion,
+    () => false,
+  );
 
-  const reduced = usePrefersReducedMotion();
-  const [activeWords, setActiveWords] = useState(0);
-
-  /* Reveal blocks once, with staggered animation */
   useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
+    const stage = stageRef.current;
+    if (!stage || reduced) return;
 
-    const items = Array.from(section.querySelectorAll("[data-reveal]"));
-
-    if (reduced) {
-      items.forEach((item) => item.classList.add("is-visible"));
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add("is-visible");
-          observer.unobserve(entry.target);
-        });
-      },
-      { threshold: 0.12, rootMargin: "0px 0px -6% 0px" },
-    );
-
-    items.forEach((item) => observer.observe(item));
-
-    return () => observer.disconnect();
-  }, [reduced]);
-
-  /* Light the statement word by word while it moves up the viewport */
-  useEffect(() => {
-    const statement = statementRef.current;
-    if (!statement || reduced) return;
-
-    let frame = 0;
-
-    const update = () => {
-      frame = 0;
-
-      const rect = statement.getBoundingClientRect();
-      const viewport = window.innerHeight || 1;
-      const start = viewport * 0.92;
-      const end = viewport * 0.38;
-      const progress = Math.min(
-        1,
-        Math.max(0, (start - rect.top) / (start - end)),
-      );
-      const next = Math.round(progress * STATEMENT.length);
-
-      setActiveWords((current) => (current === next ? current : next));
+    let raf = 0;
+    const updateStatement = () => {
+      const rect = stage.getBoundingClientRect();
+      const total = rect.height - window.innerHeight;
+      const p = total > 0 ? clamp(-rect.top / total, 0, 1) : 1;
+      // each word lights up from base (0.55) to fully lit (1.0)
+      const q = clamp(p / 0.85, 0, 1) * WORDS.length;
+      wordRefs.current.forEach((el, i) => {
+        if (el) el.style.setProperty("--l", clamp(q - i, 0, 1).toFixed(3));
+      });
+      if (nameRef.current) {
+        nameRef.current.style.setProperty(
+          "--n",
+          clamp((p - 0.86) / 0.12, 0, 1).toFixed(3),
+        );
+      }
+      if (ghostRef.current) {
+        ghostRef.current.style.transform = `translate3d(${-16 * p}vw,0,0)`;
+      }
     };
 
-    const schedule = () => {
-      if (!frame) frame = requestAnimationFrame(update);
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        updateStatement();
+        raf = 0;
+      });
     };
 
-    update();
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
+    updateStatement();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", updateStatement);
 
     return () => {
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
-      if (frame) cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", updateStatement);
+      if (raf) cancelAnimationFrame(raf);
     };
   }, [reduced]);
-
-  /* Soft ember light that follows the cursor on desktop pointer devices */
-  useEffect(() => {
-    const section = sectionRef.current;
-    const spot = spotRef.current;
-    if (!section || !spot) return;
-
-    const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
-    let frame = 0;
-    let x = 0;
-    let y = 0;
-
-    const paint = () => {
-      frame = 0;
-      spot.style.setProperty("--spot-x", `${x}px`);
-      spot.style.setProperty("--spot-y", `${y}px`);
-    };
-
-    const handleMove = (event) => {
-      if (!finePointer.matches) return;
-
-      const rect = section.getBoundingClientRect();
-      x = event.clientX - rect.left;
-      y = event.clientY - rect.top;
-
-      if (!frame) frame = requestAnimationFrame(paint);
-    };
-
-    const handleEnter = () => {
-      if (finePointer.matches) section.classList.add("has-spotlight");
-    };
-
-    const handleLeave = () => section.classList.remove("has-spotlight");
-
-    section.addEventListener("pointermove", handleMove);
-    section.addEventListener("pointerenter", handleEnter);
-    section.addEventListener("pointerleave", handleLeave);
-
-    return () => {
-      section.removeEventListener("pointermove", handleMove);
-      section.removeEventListener("pointerenter", handleEnter);
-      section.removeEventListener("pointerleave", handleLeave);
-      if (frame) cancelAnimationFrame(frame);
-    };
-  }, []);
 
   return (
     <section
-      ref={sectionRef}
       id="about"
-      className={`ab-section${reduced ? " is-reduced" : ""}`}
+      ref={sectionRef}
       aria-labelledby="about-title"
+      className={`${styles.section} ${bricolage.className} ${reduced ? styles.reduced : ""}`}
     >
-      <div ref={spotRef} className="ab-spotlight" aria-hidden="true" />
-
-      <div className="ab-shell">
-        {/* Topline Bar */}
-        <header className="ab-topline">
-          <div className="ab-eyebrow">
-            <span className="ab-dot" aria-hidden="true" />
-            <span>01 — About</span>
-          </div>
-          <div className="ab-location-badge">
-            <span className="ab-location-dot" aria-hidden="true" />
-            <span>Egypt • Available Worldwide</span>
-          </div>
-        </header>
-
-        {/* Hero editorial grid: Statement + Bento Profile Card */}
-        <div className="ab-main">
-          {/* Left Column: Big Statement + Narrative + CTAs */}
-          <div className="ab-narrative" data-reveal style={{ "--ab-delay": "50ms" }}>
-            <h2 id="about-title" className="ab-statement" ref={statementRef}>
-              {STATEMENT.map((word, index) => (
+      {/* 1. Pinned statement */}
+      <div ref={stageRef} className={styles.stage}>
+        <div className={styles.sticky}>
+          <span ref={ghostRef} className={styles.ghost} aria-hidden="true">
+            About
+          </span>
+          <div className={styles.statementWrap}>
+            <h2 id="about-title" className={styles.statement}>
+              <span className={styles.srOnly}>{STATEMENT}</span>
+              {WORDS.map((word, i) => (
                 <span
-                  key={`${word}-${index}`}
-                  className={[
-                    "ab-word",
-                    index < activeWords ? "is-lit" : "",
-                    word === "alive." ? "ab-word--accent" : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
+                  key={i}
+                  className={styles.word}
+                  aria-hidden="true"
+                  ref={(el) => {
+                    wordRefs.current[i] = el;
+                  }}
                 >
                   {word}
-                  {index < STATEMENT.length - 1 ? " " : ""}
                 </span>
               ))}
             </h2>
-
-            <p className="ab-bio">
-              Early-career front-end developer from Egypt, building modern web applications
-              with React and Next.js. Fresh computer science graduate focused on crafting fluid,
-              accessible user interfaces and ready for my first junior role.
-            </p>
-
-            <div className="ab-actions">
-              <a className="ab-btn ab-btn--solid" href="#projects">
-                View projects
-                <ArrowDown />
-              </a>
-
-              <a
-                className="ab-btn ab-btn--ghost"
-                href={GITHUB}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                GitHub Profile
-                <ArrowUpRight />
-              </a>
-            </div>
           </div>
+        </div>
+      </div>
 
-          {/* Right Column: Glassmorphic Bento Profile Card */}
-          <aside
-            className="ab-card"
-            data-reveal
-            style={{ "--ab-delay": "140ms" }}
+      {/* 2. Cards */}
+      <div className={styles.container}>
+        <div className={styles.cards}>
+          <article
+            className={`${styles.card} ${styles.cEdu}`}
+            onPointerMove={handleCard}
+            onPointerLeave={resetCard}
           >
-            {/* Ambient Card Glow */}
-            <div className="ab-card-glow" aria-hidden="true" />
-
-            {/* Profile Header */}
-            <div className="ab-profile">
-              <span className="ab-avatar">
-                <Image
-                  src="/images/profile.png"
-                  alt="Portrait of Mohamed Waleed"
-                  fill
-                  sizes="62px"
-                  className="ab-avatar-img"
-                />
-              </span>
-
-              <div className="ab-profile-info">
-                <div className="ab-profile-name-row">
-                  <span className="ab-card-name">M.Waleed</span>
-                  <span className="ab-verified-badge" title="Verified developer">
-                    Junior Dev
-                  </span>
-                </div>
-                <span className="ab-card-role">Front-End Developer</span>
-              </div>
-            </div>
-
-            {/* Live Availability Status */}
-            <div className="ab-status-card">
-              <div className="ab-status-dot-wrap" aria-hidden="true">
-                <span className="ab-status-ping" />
-                <span className="ab-status-dot" />
-              </div>
-              <div className="ab-status-content">
-                <span className="ab-status-label">Current Status</span>
-                <span className="ab-status-title">Open to Junior Roles</span>
-              </div>
-            </div>
-
-            {/* Bento Fact Rows with Tech Badges */}
-            <div className="ab-facts">
-              {CURRENT_FACTS.map((fact) => (
-                <div key={fact.label} className="ab-fact-item">
-                  <div className="ab-fact-header">
-                    <span className="ab-fact-label">{fact.label}</span>
-                    <span className="ab-fact-value">{fact.value}</span>
-                  </div>
-                  <div className="ab-fact-tags">
-                    {fact.tags.map((tag) => (
-                      <span key={tag} className="ab-tag">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </aside>
-        </div>
-
-        {/* Interactive Career Journey Timeline */}
-        <div className="ab-timeline-section" data-reveal style={{ "--ab-delay": "80ms" }}>
-          <div className="ab-timeline-header">
-            <div>
-              <span className="ab-section-subtitle">Roadmap & Milestones</span>
-              <h3 className="ab-timeline-title">The Journey So Far</h3>
-            </div>
-            <p className="ab-timeline-caption">
-              From university foundations to shipping real production applications.
+            <h3 className={styles.cardLabel}>Education</h3>
+            <p className={styles.cardMain}>
+              Faculty of Computers and Information
             </p>
-          </div>
+            <p className={styles.cardSub}>Zagazig University, class of 2025</p>
+          </article>
 
-          <ol className="ab-timeline-grid">
-            {TIMELINE.map((step, idx) => (
-              <li
-                key={step.title}
-                className={`ab-timeline-card${step.current ? " is-current" : ""}`}
-              >
-                <div className="ab-timeline-top">
-                  <span className="ab-timeline-badge">{step.tag}</span>
-                  <span className="ab-timeline-year">{step.year}</span>
-                </div>
+          <article
+            className={`${styles.card} ${styles.cProjects}`}
+            onPointerMove={handleCard}
+            onPointerLeave={resetCard}
+          >
+            <h3 className={styles.cardLabel}>Personal projects</h3>
+            <ul className={styles.projects}>
+              {PROJECTS.map((p) => (
+                <li key={p.name}>
+                  <a href={p.href} target="_blank" rel="noopener noreferrer">
+                    <span className={styles.pName}>{p.name}</span>
+                    <span className={styles.pTech}>{p.tech}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </article>
 
-                <div className="ab-timeline-node" aria-hidden="true">
-                  <span className="ab-timeline-dot" />
-                  {idx < TIMELINE.length - 1 && <span className="ab-timeline-line" />}
-                </div>
+          <article
+            className={`${styles.card} ${styles.cGoal}`}
+            onPointerMove={handleCard}
+            onPointerLeave={resetCard}
+          >
+            <h3 className={styles.cardLabel}>Looking for</h3>
+            <p className={styles.cardMain}>Junior Front-End Developer roles</p>
+            <p className={styles.cardSub}>
+              English B2. Interfaces in English LTR and native Arabic RTL.
+            </p>
+          </article>
+        </div>
+      </div>
 
-                <h4 className="ab-timeline-heading">{step.title}</h4>
-                <p className="ab-timeline-institution">{step.institution}</p>
-                <p className="ab-timeline-desc">{step.description}</p>
-              </li>
-            ))}
-          </ol>
+      {/* 3. Skills marquee */}
+      <div className={styles.skills}>
+        <div className={styles.container}>
+          <h3 className={styles.skillsTitle}>Skills</h3>
         </div>
 
-        {/* Enhanced Stats Bento Grid */}
-        <dl className="ab-stats" data-reveal style={{ "--ab-delay": "100ms" }}>
-          {STATS.map((stat) => (
-            <div key={stat.label} className="ab-stat-card">
-              <div className="ab-stat-card-glow" aria-hidden="true" />
-              <dt className="ab-stat-label">{stat.label}</dt>
-              <dd className="ab-stat-num">
-                <Counter
-                  value={stat.value}
-                  suffix={stat.suffix}
-                  animate={stat.animate}
-                  reduced={reduced}
-                />
-              </dd>
-              <p className="ab-stat-desc">{stat.description}</p>
-            </div>
-          ))}
-        </dl>
+        {GROUPS.map((group, i) => (
+          <SkillsRow key={group.name} group={group} index={i} />
+        ))}
+      </div>
+
+      {/* 4. Links */}
+      <div className={styles.container}>
+        <div className={styles.links}>
+          <a href="#projects">See the projects</a>
+          <a href="#contact">Contact me</a>
+        </div>
       </div>
     </section>
   );

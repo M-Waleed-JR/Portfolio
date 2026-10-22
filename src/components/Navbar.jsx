@@ -1,261 +1,103 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
-const links = [
-  { id: "home", label: "Home", href: "/#home" },
-  { id: "about", label: "About", href: "/#about" },
-  { id: "projects", label: "Projects", href: "/#projects" },
-  { id: "contact", label: "Contact", href: "/#contact" },
-];
-
-// Sections sit under the fixed bar, so stop this many px above them.
-// Read from the same CSS value the browser uses for native anchors.
-const headerOffset = () => {
-  const value = parseFloat(
-    getComputedStyle(document.documentElement).scrollPaddingTop,
-  );
-
-  return Number.isFinite(value) ? value : 0;
-};
-
-const clampScrollY = (value) => {
-  const max = document.documentElement.scrollHeight - window.innerHeight;
-
-  return Math.max(0, Math.min(max, value));
-};
-
-// Plain scrollTo() would inherit `scroll-behavior: smooth` from the CSS and
-// fight our own frames, so opt out while we move the page ourselves.
-const scrollInstantly = (top) => {
-  const root = document.documentElement;
-  const previous = root.style.scrollBehavior;
-
-  root.style.scrollBehavior = "auto";
-  window.scrollTo(0, top);
-  root.style.scrollBehavior = previous;
-};
-
-const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
-
-// Returns a cancel function so a new click (or the user's own scrolling)
-// can stop an animation that is still running.
-function animateScrollTo(targetY) {
-  const startY = window.scrollY;
-  const distance = targetY - startY;
-
-  if (Math.abs(distance) < 2) {
-    scrollInstantly(targetY);
-    return () => {};
-  }
-
-  const root = document.documentElement;
-  const previous = root.style.scrollBehavior;
-
-  root.style.scrollBehavior = "auto";
-
-  const duration = Math.min(1100, Math.max(480, Math.abs(distance) * 0.45));
-  const startedAt = performance.now();
-  let frame = 0;
-
-  const restore = () => {
-    root.style.scrollBehavior = previous;
-  };
-
-  const step = (now) => {
-    const t = Math.min(1, (now - startedAt) / duration);
-    window.scrollTo(0, startY + distance * easeOutCubic(t));
-
-    if (t < 1) {
-      frame = window.requestAnimationFrame(step);
-    } else {
-      frame = 0;
-      restore();
-    }
-  };
-
-  frame = window.requestAnimationFrame(step);
-
-  return () => {
-    if (frame) window.cancelAnimationFrame(frame);
-    frame = 0;
-    restore();
-  };
-}
+const LINKS = ["Home", "About", "Projects", "Contact"];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const [active, setActive] = useState("home");
   const [open, setOpen] = useState(false);
-  const stopScrollRef = useRef(() => {});
+  const [active, setActive] = useState("home");
 
-  const handleNavClick = (event, href) => {
-    const hash = href.slice(href.indexOf("#") + 1);
-    const target = document.getElementById(hash);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
 
-    // Target not on this page -> let the browser navigate normally.
-    if (!target) {
-      setOpen(false);
-      return;
-    }
-
-    event.preventDefault();
-    setOpen(false);
-    stopScrollRef.current();
-
-    const top = clampScrollY(
-      window.scrollY + target.getBoundingClientRect().top - headerOffset(),
+    // Highlight the section currently in the middle of the screen
+    const observer = new IntersectionObserver(
+      (entries) =>
+        entries.forEach((e) => e.isIntersecting && setActive(e.target.id)),
+      { rootMargin: "-40% 0px -55% 0px" },
     );
-
-    const reduce = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-
-    stopScrollRef.current = reduce
-      ? (scrollInstantly(top), () => {})
-      : animateScrollTo(top);
-
-    window.history.replaceState(null, "", `#${hash}`);
-  };
-
-  // Let the user take over at any point.
-  useEffect(() => {
-    const stop = () => stopScrollRef.current();
-
-    window.addEventListener("wheel", stop, { passive: true });
-    window.addEventListener("touchstart", stop, { passive: true });
-    window.addEventListener("keydown", stop);
+    LINKS.forEach((name) => {
+      const el = document.getElementById(name.toLowerCase());
+      if (el) observer.observe(el);
+    });
 
     return () => {
-      window.removeEventListener("wheel", stop);
-      window.removeEventListener("touchstart", stop);
-      window.removeEventListener("keydown", stop);
-      stopScrollRef.current();
+      window.removeEventListener("scroll", onScroll);
+      observer.disconnect();
     };
   }, []);
 
-  // Glass bar once the page moves + highlight the section currently in view.
-  useEffect(() => {
-    let frame = 0;
+  // No highlight while the page is at the very top
+  const isActive = (id) => scrolled && active === id;
 
-    const measure = () => {
-      frame = 0;
-      setScrolled(window.scrollY > 24);
-
-      const line = headerOffset() + 8;
-      let current = links[0].id;
-
-      links.forEach(({ id }) => {
-        const el = document.getElementById(id);
-        if (el && el.getBoundingClientRect().top <= line) current = id;
-      });
-
-      setActive((previous) => (previous === current ? previous : current));
-    };
-
-    const schedule = () => {
-      if (frame) return;
-      frame = window.requestAnimationFrame(measure);
-    };
-
-    measure();
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
-
-    return () => {
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
-
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-  }, []);
-
-  // Close the mobile panel with Escape, or when the desktop nav comes back.
-  useEffect(() => {
-    if (!open) return;
-
-    const onKeyDown = (event) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-
-    const onResize = () => {
-      if (window.matchMedia("(min-width: 1024px)").matches) setOpen(false);
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    window.addEventListener("resize", onResize);
-
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("resize", onResize);
-    };
-  }, [open]);
+  const linkClass = (id) =>
+    `border-b-2 pb-1 transition-colors ${
+      isActive(id)
+        ? "border-[var(--color-ember)] text-[var(--color-ember)]"
+        : "border-transparent text-white/70 hover:text-white"
+    }`;
 
   return (
-    <>
-      <header className={scrolled ? "site-nav is-scrolled" : "site-nav"}>
-        <Link
-          className="site-nav-brand"
-          href="/#home"
-          onClick={(event) => handleNavClick(event, "/#home")}
+    <header
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+        scrolled ? "bg-[#030303]/80 py-4 backdrop-blur-md" : "py-6 lg:py-8"
+      }`}
+    >
+      <div className="mx-auto flex max-w-[1920px] items-center justify-between px-6 md:px-12 lg:px-20">
+        <a
+          href="#home"
+          className="text-xl font-bold text-white transition-colors hover:text-[var(--color-ember)]"
         >
           Portfolio
-        </Link>
+        </a>
 
-        <nav className="site-nav-links" aria-label="Main">
-          {links.map(({ id, label, href }) => (
-            <Link
-              key={id}
-              href={href}
-              className={
-                active === id ? "site-nav-link is-active" : "site-nav-link"
-              }
-              aria-current={active === id ? "true" : undefined}
-              onClick={(event) => handleNavClick(event, href)}
+        {/* Desktop links */}
+        <nav className="hidden items-center gap-8 text-[15px] font-medium lg:flex">
+          {LINKS.map((name) => (
+            <a
+              key={name}
+              href={`#${name.toLowerCase()}`}
+              className={linkClass(name.toLowerCase())}
             >
-              {label}
-            </Link>
+              {name}
+            </a>
           ))}
         </nav>
 
+        {/* Mobile toggle */}
         <button
-          type="button"
-          className="site-nav-menu"
+          onClick={() => setOpen(!open)}
           aria-expanded={open}
-          aria-controls="site-nav-panel"
-          onClick={() => setOpen((value) => !value)}
+          aria-label="Toggle menu"
+          className="text-lg font-medium text-white/80 hover:text-[var(--color-ember)] lg:hidden"
         >
-          <span>{open ? "Close" : "Menu"}</span>
-
-          <span className="site-nav-burger" aria-hidden="true">
-            <span />
-            <span />
-          </span>
+          {open ? "Close" : "Menu"}
         </button>
-      </header>
+      </div>
 
+      {/* Mobile menu */}
       {open && (
-        <nav
-          id="site-nav-panel"
-          className="site-nav-panel"
-          aria-label="Mobile navigation"
-        >
-          <ul className="site-nav-panel-list">
-            {links.map(({ id, label, href }) => (
-              <li key={id}>
-                <Link
-                  href={href}
-                  className={active === id ? "is-active" : undefined}
-                  onClick={(event) => handleNavClick(event, href)}
-                >
-                  {label}
-                </Link>
-              </li>
-            ))}
-          </ul>
+        <nav className="mx-6 mt-4 flex flex-col gap-5 rounded-lg bg-[#0a0a0a]/95 p-6 text-base font-medium backdrop-blur-xl lg:hidden">
+          {LINKS.map((name) => (
+            <a
+              key={name}
+              href={`#${name.toLowerCase()}`}
+              onClick={() => setOpen(false)}
+              className={
+                isActive(name.toLowerCase())
+                  ? "text-[var(--color-ember)]"
+                  : "text-white/70"
+              }
+            >
+              {name}
+            </a>
+          ))}
         </nav>
       )}
-    </>
+    </header>
   );
 }
