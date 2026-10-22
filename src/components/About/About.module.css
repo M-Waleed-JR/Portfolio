@@ -118,6 +118,7 @@
   line-height: 1.07;
   letter-spacing: -0.035em;
   font-variation-settings: "wdth" 84;
+  text-align: center;
 }
 
 .word {
@@ -264,7 +265,7 @@
   border-bottom: 1px solid var(--line);
 }
 
-.projects a {
+.pItem {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -272,13 +273,12 @@
   gap: 0.25rem 1.5rem;
   padding: clamp(1rem, 2vw, 1.5rem) 0;
   color: var(--bone);
-  text-decoration: none;
   transition:
     color 0.2s,
     padding-left 0.25s;
 }
 
-.projects a:hover {
+.pItem:hover {
   color: var(--gold);
   padding-left: 0.75rem;
 }

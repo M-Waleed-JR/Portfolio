@@ -1,8 +1,3 @@
-/*===========================================
-  Projects showcase
-  Pinned on screen: scrolling moves from one project
-  to the next. Same black world as the hero and About.
-===========================================*/
 
 .section {
   --void: #040405;
@@ -15,13 +10,11 @@
 
   position: relative;
   isolation: isolate;
-  /* clip (not hidden): hidden would break the pinned stage */
   overflow-x: clip;
   color: var(--bone);
   background: var(--void);
 }
 
-/* Film grain, same as About */
 .section::after {
   content: "";
   position: absolute;
@@ -42,7 +35,6 @@
   white-space: nowrap;
 }
 
-/* Scroll distance: one screen of pinned time for every project */
 .stage {
   position: relative;
   height: 380vh;
@@ -66,7 +58,6 @@
   overflow: hidden;
 }
 
-/* The light changes color with the project; the warm corner stays. */
 .sticky::before {
   content: "";
   position: absolute;
@@ -268,7 +259,6 @@
   overflow: hidden;
 }
 
-/* Every screenshot waits hidden, then is revealed from the bottom up */
 .shot {
   position: absolute;
   inset: 0;
@@ -315,7 +305,6 @@
   margin-top: -4vh;
 }
 
-/* Names are stacked in a column; scrolling rolls the column up like a slot machine */
 .nameWindow {
   flex: 1;
   min-width: 0;

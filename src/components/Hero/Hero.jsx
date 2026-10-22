@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-
 import { Montserrat } from "next/font/google";
+import styles from "./Hero.module.css";
 
 const portfolioFont = Montserrat({
   subsets: ["latin"],
@@ -11,7 +11,7 @@ const portfolioFont = Montserrat({
 
 export default function Hero() {
   return (
-    <section className="relative min-h-[100svh] overflow-hidden bg-[#030303] text-white">
+    <section id="home" className="relative min-h-[100svh] overflow-hidden bg-[#030303] text-white">
       {/* ================= BACKGROUND ================= */}
 
       <div
@@ -51,7 +51,7 @@ export default function Hero() {
         <div
           className={`
     ${portfolioFont.className}
-    portfolio-title
+    ${styles.portfolioTitle}
     pointer-events-none
     select-none
     absolute
@@ -82,8 +82,8 @@ export default function Hero() {
         {/* ================= PROFILE IMAGE ================= */}
 
         <div
-          className="
-    profile-image
+          className={`
+    ${styles.profileImage}
     absolute
     bottom-[-4%]
     left-1/2
@@ -104,7 +104,7 @@ export default function Hero() {
 
     xl:w-[68vw]
     xl:max-w-[1400px]
-  "
+  `}
         >
           <Image
             src="/images/profile.png"
@@ -118,8 +118,8 @@ export default function Hero() {
         {/* ================= FRONTEND DEVELOPER ================= */}
 
         <div
-          className="
-    developer-text
+          className={`
+    ${styles.developerText}
     absolute
     bottom-3
     left-4
@@ -136,7 +136,7 @@ export default function Hero() {
     md:left-10
 
     lg:left-16
-  "
+  `}
         >
           <span
             className="

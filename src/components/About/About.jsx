@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Bricolage_Grotesque } from "next/font/google";
+import { smoothScrollToId } from "@/lib/smoothScroll";
 import styles from "./About.module.css";
 
 const bricolage = Bricolage_Grotesque({
@@ -10,7 +11,7 @@ const bricolage = Bricolage_Grotesque({
   display: "swap",
 });
 
-const STATEMENT = ` Hi iam Mohamed Waleed Jr Front-end developer , I build responsive interfaces with React and Next.js, and I care how every screen feels, from phone to desktop.`;
+const STATEMENT = `Hi, I am Mohamed Waleed — Jr Front-end developer. I build responsive interfaces with React and Next.js, and I care how every screen feels, from phone to desktop.`;
 const WORDS = STATEMENT.split(" ");
 
 const GROUPS = [
@@ -61,23 +62,19 @@ const GROUPS = [
 const PROJECTS = [
   {
     name: "Nova",
-    tech: "Next.js, TypeScript,React.js, Tailwind CSS, Swiper, Lucide React",
-    href: "https://nova-jet-two.vercel.app/",
+    tech: "Next.js, TypeScript, React.js, Tailwind CSS, Swiper, Lucide React",
   },
   {
     name: "Gusto",
     tech: "Next.js, React 19, TypeScript, Tailwind CSS, Three.js, React Three Fiber",
-    href: "https://food-app-ruddy-omega.vercel.app/",
   },
   {
     name: "Weather app",
     tech: "React.js, Vite, Axios, REST API, Tailwind CSS",
-    href: "https://weather-app-opal-nine-repyfja5gb.vercel.app/",
   },
   {
     name: "To-do list",
     tech: "React 19, Vite, Material UI (MUI), Tailwind CSS, Local Storage, Arabic RTL",
-    href: "https://todo-list-eight-liart.vercel.app/",
   },
 ];
 
@@ -153,7 +150,6 @@ function SkillsRow({ group, index }) {
 
     let rafId = 0;
     let lastTime = performance.now();
-    // 50 seconds to complete 1 set loop (slow & uniform)
     const speed = width / 50;
 
     const updatePosition = () => {
@@ -255,10 +251,8 @@ function SkillsRow({ group, index }) {
 }
 
 export default function About() {
-  const sectionRef = useRef(null);
   const stageRef = useRef(null);
   const ghostRef = useRef(null);
-  const nameRef = useRef(null);
   const wordRefs = useRef([]);
   const reduced = useSyncExternalStore(
     subscribeReducedMotion,
@@ -275,17 +269,10 @@ export default function About() {
       const rect = stage.getBoundingClientRect();
       const total = rect.height - window.innerHeight;
       const p = total > 0 ? clamp(-rect.top / total, 0, 1) : 1;
-      // each word lights up from base (0.55) to fully lit (1.0)
       const q = clamp(p / 0.85, 0, 1) * WORDS.length;
       wordRefs.current.forEach((el, i) => {
         if (el) el.style.setProperty("--l", clamp(q - i, 0, 1).toFixed(3));
       });
-      if (nameRef.current) {
-        nameRef.current.style.setProperty(
-          "--n",
-          clamp((p - 0.86) / 0.12, 0, 1).toFixed(3),
-        );
-      }
       if (ghostRef.current) {
         ghostRef.current.style.transform = `translate3d(${-16 * p}vw,0,0)`;
       }
@@ -313,7 +300,6 @@ export default function About() {
   return (
     <section
       id="about"
-      ref={sectionRef}
       aria-labelledby="about-title"
       className={`${styles.section} ${bricolage.className} ${reduced ? styles.reduced : ""}`}
     >
@@ -366,11 +352,9 @@ export default function About() {
             <h3 className={styles.cardLabel}>Personal projects</h3>
             <ul className={styles.projects}>
               {PROJECTS.map((p) => (
-                <li key={p.name}>
-                  <a href={p.href} target="_blank" rel="noopener noreferrer">
-                    <span className={styles.pName}>{p.name}</span>
-                    <span className={styles.pTech}>{p.tech}</span>
-                  </a>
+                <li key={p.name} className={styles.pItem}>
+                  <span className={styles.pName}>{p.name}</span>
+                  <span className={styles.pTech}>{p.tech}</span>
                 </li>
               ))}
             </ul>
@@ -404,8 +388,24 @@ export default function About() {
       {/* 4. Links */}
       <div className={styles.container}>
         <div className={styles.links}>
-          <a href="#projects">See the projects</a>
-          <a href="#contact">Contact me</a>
+          <a
+            href="#projects"
+            onClick={(event) => {
+              event.preventDefault();
+              smoothScrollToId("projects");
+            }}
+          >
+            See the projects
+          </a>
+          <a
+            href="#contact"
+            onClick={(event) => {
+              event.preventDefault();
+              smoothScrollToId("contact");
+            }}
+          >
+            Contact me
+          </a>
         </div>
       </div>
     </section>

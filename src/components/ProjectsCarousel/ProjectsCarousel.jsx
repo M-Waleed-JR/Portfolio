@@ -104,7 +104,7 @@ export default function ProjectsCarousel() {
   const segRefs = useRef([]);
 
   const st = useRef({
-    g: 0, // smoothed position between projects (0 to COUNT - 1)
+    g: 0,
     active: -1,
     tx: 0,
     ty: 0,
@@ -134,7 +134,6 @@ export default function ProjectsCarousel() {
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
 
-      // 1. Scroll progress -> target position, with a hold on every project
       const rect = stage.getBoundingClientRect();
       const total = rect.height - window.innerHeight;
       const p = total > 0 ? clamp(-rect.top / total, 0, 1) : 0;
@@ -149,7 +148,6 @@ export default function ProjectsCarousel() {
         : state.g + (target - state.g) * (1 - Math.exp(-dt * 9));
       const g = state.g;
 
-      // 2. Ambient color: blends between the accents of neighbouring projects
       const i0 = Math.min(Math.floor(g), COUNT - 1);
       const i1 = Math.min(i0 + 1, COUNT - 1);
       const f = g - i0;
@@ -160,7 +158,6 @@ export default function ProjectsCarousel() {
       root.style.setProperty("--accent", `rgb(${c})`);
       root.style.setProperty("--g", g.toFixed(4));
 
-      // 3. Screenshots: each one is revealed upwards over the previous
       shotRefs.current.forEach((el, i) => {
         if (!el) return;
         const d = i - g;
@@ -170,7 +167,6 @@ export default function ProjectsCarousel() {
         if (img) img.style.transform = `scale(${(1 + open * 0.14).toFixed(3)})`;
       });
 
-      // 4. Info blocks: cross-fade around the center
       infoRefs.current.forEach((el, i) => {
         if (!el) return;
         const d = i - g;
@@ -181,7 +177,6 @@ export default function ProjectsCarousel() {
         el.style.pointerEvents = v > 0.5 ? "auto" : "none";
       });
 
-      // 5. Progress segments
       segRefs.current.forEach((el, i) => {
         if (el)
           el.style.setProperty(
@@ -190,7 +185,6 @@ export default function ProjectsCarousel() {
           );
       });
 
-      // 6. Things that only change when another project takes the center
       const act = clamp(Math.round(g), 0, COUNT - 1);
       if (act !== state.active) {
         state.active = act;
@@ -210,7 +204,6 @@ export default function ProjectsCarousel() {
         });
       }
 
-      // 7. Tilt of the browser frame follows the pointer (desktop only)
       const mock = mockRef.current;
       if (mock) {
         const wide = window.innerWidth >= 900;
@@ -284,7 +277,6 @@ export default function ProjectsCarousel() {
     >
       <div ref={stageRef} className={styles.stage}>
         <div ref={rootRef} className={styles.sticky}>
-          {/* Top bar */}
           <div className={styles.top}>
             <div>
               <p className={styles.kicker}>
@@ -320,7 +312,6 @@ export default function ProjectsCarousel() {
             </div>
           </div>
 
-          {/* Browser frame with the screenshots */}
           <div className={styles.mid}>
             <div
               className={styles.mockWrap}
@@ -365,7 +356,6 @@ export default function ProjectsCarousel() {
             </div>
           </div>
 
-          {/* Big name + details */}
           <div className={styles.bottom}>
             <div className={styles.nameWindow} aria-hidden="true">
               <div className={styles.nameList}>
