@@ -484,6 +484,13 @@
   align-items: stretch;
   gap: 1rem;
   padding-bottom: clamp(5rem, 9vw, 8rem);
+  padding-top: 2rem;
+}
+
+@media (max-width: 640px) {
+  .links {
+    padding-top: 4rem;
+  }
 }
 
 .actionLink {
