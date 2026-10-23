@@ -401,32 +401,283 @@
 
 /* ---------- 4. Links ---------- */
 
+.downloadButton {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  min-width: min(100%, 10rem);
+  height: 3.25rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  overflow: hidden;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--gold);
+  border-radius: 0.75rem;
+  background: var(--gold);
+  color: var(--void);
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.35s ease,
+    background 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+:global(.downloadButton:hover:not(:disabled)) {
+  transform: translateY(-4px);
+  border-color: #f5b97a;
+  background: #f5b97a;
+  box-shadow: 0 14px 28px -18px rgba(240, 168, 90, 0.9);
+}
+
+:global(.downloadButton:active:not(:disabled)) {
+  transform: translateY(-1px) scale(0.98);
+}
+
+:global(.downloadButton:disabled) {
+  cursor: default;
+}
+
+.downloadButtonIcon {
+  position: relative;
+  z-index: 5;
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+}
+
+.downloadButtonStatus {
+  position: relative;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+}
+
+.downloadButtonSpinner {
+  animation: downloadButtonSpin 1s linear infinite;
+}
+
+.downloadButtonProgress {
+  position: absolute;
+  z-index: 3;
+  inset: 0 auto 0 0;
+  background: rgba(255, 255, 255, 0.3);
+  pointer-events: none;
+  transition: width 0.2s ease-in-out;
+}
+
+@keyframes downloadButtonSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
 .links {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem 2.5rem;
+  align-items: stretch;
+  gap: 1rem;
   padding-bottom: clamp(5rem, 9vw, 8rem);
 }
 
-.links a {
-  font-size: 1.0625rem;
-  font-weight: 500;
+.actionLink {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  min-width: min(100%, 18rem);
+  align-items: center;
+  gap: 0.85rem;
+  overflow: hidden;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(241, 236, 228, 0.18);
+  border-radius: 0.85rem;
   color: var(--bone);
-  text-decoration: underline;
-  text-decoration-color: var(--gold);
-  text-decoration-thickness: 2px;
-  text-underline-offset: 0.35em;
-  transition: color 0.2s;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.35s ease,
+    background 0.35s ease,
+    box-shadow 0.35s ease;
 }
 
-.links a:hover {
+.actionLink::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: "";
+  background: linear-gradient(115deg, rgba(240, 168, 90, 0.16), transparent 62%);
+  opacity: 0;
+  transform: translateX(-12%);
+  transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.actionLink:hover {
+  transform: translateY(-4px);
+  border-color: rgba(240, 168, 90, 0.7);
+  box-shadow: 0 14px 28px -18px rgba(240, 168, 90, 0.75);
+}
+
+.actionLink:hover::before {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.actionLink:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
+.actionIcon,
+.contactPulse {
+  display: grid;
+  flex: 0 0 2.6rem;
+  width: 2.6rem;
+  height: 2.6rem;
+  place-items: center;
+  border-radius: 0.65rem;
+  background: var(--gold);
+  color: var(--void);
+}
+
+.actionIcon svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.actionLink:hover .actionIcon svg {
+  transform: translateY(2px);
+}
+
+.actionCopy {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.actionLabel {
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.actionMeta {
+  color: var(--ash);
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+}
+
+.actionArrow {
+  margin-left: auto;
   color: var(--gold);
+  font-size: 1.35rem;
+  line-height: 1;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.links a:focus-visible,
-.projects a:focus-visible {
+.actionLink:hover .actionArrow {
+  transform: translate(3px, -3px);
+}
+
+.cvLink {
+  color: var(--void);
+  border-color: var(--gold);
+  background: var(--gold);
+  box-shadow: 0 8px 24px -18px rgba(240, 168, 90, 0.9);
+}
+
+.cvLink::before {
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.3), transparent 64%);
+}
+
+.cvLink .actionMeta,
+.cvLink .actionArrow {
+  color: rgba(4, 4, 5, 0.62);
+}
+
+.cvLink:hover {
+  color: var(--void);
+  border-color: #f5b97a;
+  background: #f5b97a;
+}
+
+.contactLink {
+  min-width: min(100%, 12rem);
+  height: 3.25rem;
+  padding: 0 1.25rem;
+  border: 1px solid rgba(63, 181, 192, 0.3);
+  border-radius: 0.75rem;
+  background: rgba(63, 181, 192, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.contactIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--lagoon);
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.contactIcon svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.contactLink:hover {
+  border-color: var(--lagoon);
+  background: rgba(63, 181, 192, 0.15);
+  box-shadow: 0 12px 24px -12px rgba(63, 181, 192, 0.5);
+  transform: translateY(-4px);
+}
+
+.contactLink:hover .contactIcon {
+  transform: rotate(-6deg) scale(1.06);
+  background: rgba(63, 181, 192, 0.3);
+}
+
+.contactLink:hover .contactIcon svg {
+  transform: scale(1.1);
+}
+
+.contactLink::before {
+  background: linear-gradient(115deg, rgba(63, 181, 192, 0.2), transparent 65%);
+}
+
+.links a:focus-visible {
   outline: 2px solid var(--lagoon);
-  outline-offset: 4px;
+  outline-offset: 5px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actionLink,
+  .actionLink::before,
+  .actionIcon svg,
+  .actionArrow,
+  .downloadButton,
+  .downloadButtonProgress,
+  .contactIcon,
+  .contactIcon svg {
+    transition: none;
+  }
+
+  .actionLink:hover,
+  .actionLink:active,
+  .actionLink:hover .actionArrow {
+    transform: none;
+  }
 }
 
 /* ---------- Responsive ---------- */
@@ -475,4 +726,16 @@
 .reduced .card {
   transform: none;
   transition: none;
+}
+
+.reduced .links,
+.reduced .links a,
+.reduced .links a::after,
+.reduced .links .arrow {
+  transition: none;
+  animation: none;
+}
+
+.reduced .links a:hover {
+  transform: none;
 }

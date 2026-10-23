@@ -505,9 +505,7 @@ export default function Contact() {
             <span className={styles.footerRole}>
               Junior Front-End Developer
             </span>
-            <span className={styles.footerLoc}>
-              Cairo, Egypt • Worldwide Remote
-            </span>
+            <span className={styles.footerLoc}>Al-Sharqia, Egypt</span>
           </div>
 
           <div className={styles.footerCenter}>

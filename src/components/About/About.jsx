@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import gsap from "gsap";
+import { CheckCircle, Download, Loader2, MessageCircle } from "lucide-react";
 import { Bricolage_Grotesque } from "next/font/google";
 import { smoothScrollToId } from "@/lib/smoothScroll";
 import styles from "./About.module.css";
@@ -254,6 +256,11 @@ export default function About() {
   const stageRef = useRef(null);
   const ghostRef = useRef(null);
   const wordRefs = useRef([]);
+  const cvLinkRef = useRef(null);
+  const contactLinkRef = useRef(null);
+  const linksRef = useRef(null);
+  const [downloadStatus, setDownloadStatus] = useState("idle");
+  const [downloadProgress, setDownloadProgress] = useState(0);
   const reduced = useSyncExternalStore(
     subscribeReducedMotion,
     getReducedMotion,
@@ -297,6 +304,57 @@ export default function About() {
     };
   }, [reduced]);
 
+  /* ---------- Links entrance animation ---------- */
+  useEffect(() => {
+    if (reduced) return;
+
+    const cv = cvLinkRef.current;
+    const contact = contactLinkRef.current;
+    if (!cv || !contact) return;
+
+    gsap.fromTo(
+      [cv, contact],
+      { opacity: 0, y: 20, scale: 0.95 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.6,
+        stagger: 0.1,
+        ease: "power3.out",
+        delay: 0.5,
+      },
+    );
+  }, [reduced]);
+
+  const handleDownload = () => {
+    if (downloadStatus !== "idle") return;
+
+    setDownloadStatus("downloading");
+    setDownloadProgress(0);
+    const interval = setInterval(() => {
+      setDownloadProgress((current) => {
+        const next = Math.min(current + 5, 100);
+        if (next === 100) clearInterval(interval);
+        return next;
+      });
+    }, 50);
+
+    setTimeout(() => {
+      const link = document.createElement("a");
+      link.href =
+        "/Mohamed_Waleed%20Alsayed_Front-End%20Developer%20_resume.pdf";
+      link.download = "Mohamed_Waleed_CV.pdf";
+      link.click();
+      setDownloadStatus("downloaded");
+    }, 1050);
+
+    setTimeout(() => {
+      setDownloadStatus("idle");
+      setDownloadProgress(0);
+    }, 2200);
+  };
+
   return (
     <section
       id="about"
@@ -325,6 +383,70 @@ export default function About() {
                 </span>
               ))}
             </h2>
+          </div>
+        </div>
+
+        {/* 4. Links */}
+        <div className={styles.container}>
+          <div className={styles.links} ref={linksRef}>
+            <button
+              ref={cvLinkRef}
+              type="button"
+              onClick={handleDownload}
+              disabled={downloadStatus !== "idle"}
+              className={styles.downloadButton}
+              aria-label="Download CV"
+            >
+              {downloadStatus === "idle" && (
+                <>
+                  <Download
+                    className={styles.downloadButtonIcon}
+                    aria-hidden="true"
+                  />
+                  <span>Download My Cv</span>
+                </>
+              )}
+              {downloadStatus === "downloading" && (
+                <span className={styles.downloadButtonStatus}>
+                  <Loader2
+                    className={`${styles.downloadButtonIcon} ${styles.downloadButtonSpinner}`}
+                    aria-hidden="true"
+                  />
+                  {downloadProgress}%
+                </span>
+              )}
+              {downloadStatus === "downloaded" && (
+                <>
+                  <CheckCircle
+                    className={styles.downloadButtonIcon}
+                    aria-hidden="true"
+                  />
+                  <span>Downloaded</span>
+                </>
+              )}
+              {downloadStatus === "downloading" && (
+                <span
+                  className={styles.downloadButtonProgress}
+                  style={{ width: `${downloadProgress}%` }}
+                  aria-hidden="true"
+                />
+              )}
+            </button>
+            <a
+              ref={contactLinkRef}
+              href="#contact"
+              onClick={(event) => {
+                event.preventDefault();
+                smoothScrollToId("contact");
+              }}
+              className={`${styles.actionLink} ${styles.contactLink}`}
+            >
+              <MessageCircle size={18} className={styles.downloadButtonIcon} />
+              <span>Contact Me</span>
+              <span className={styles.actionArrow} aria-hidden="true">
+                →
+              </span>
+            </a>
           </div>
         </div>
       </div>
@@ -383,30 +505,6 @@ export default function About() {
         {GROUPS.map((group, i) => (
           <SkillsRow key={group.name} group={group} index={i} />
         ))}
-      </div>
-
-      {/* 4. Links */}
-      <div className={styles.container}>
-        <div className={styles.links}>
-          <a
-            href="#projects"
-            onClick={(event) => {
-              event.preventDefault();
-              smoothScrollToId("projects");
-            }}
-          >
-            See the projects
-          </a>
-          <a
-            href="#contact"
-            onClick={(event) => {
-              event.preventDefault();
-              smoothScrollToId("contact");
-            }}
-          >
-            Contact me
-          </a>
-        </div>
       </div>
     </section>
   );
