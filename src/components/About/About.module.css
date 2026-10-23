@@ -15,7 +15,7 @@
   color: var(--bone);
 }
 
-/* Warm light from the left, cool light from the right: same world as the hero. */
+/* Warm light from the left, cool light from the right */
 .section::before {
   content: "";
   position: absolute;
@@ -106,9 +106,9 @@
 
 .statementWrap {
   position: relative;
+  width: 100%;
   max-width: 1240px;
   margin: 0 auto;
-  width: 100%;
 }
 
 .statement {
@@ -128,21 +128,107 @@
   /* always visible at 60%, fully opaque when lit */
   opacity: calc(0.6 + 0.4 * var(--l));
   text-shadow:
-    /* inner sharp glow */
     0 0 calc(var(--l) * 18px) rgba(240, 168, 90, var(--l)),
-    /* mid halo */ 0 0 calc(var(--l) * 45px)
-      rgba(240, 168, 90, calc(var(--l) * 0.65)),
-    /* outer ambient bloom */ 0 0 calc(var(--l) * 90px)
-      rgba(240, 168, 90, calc(var(--l) * 0.3));
+    0 0 calc(var(--l) * 45px) rgba(240, 168, 90, calc(var(--l) * 0.65)),
+    0 0 calc(var(--l) * 90px) rgba(240, 168, 90, calc(var(--l) * 0.3));
 }
 
-.byline {
-  --n: 0;
-  margin: clamp(1.5rem, 3vw, 2.5rem) 0 0;
-  font-size: clamp(1rem, 1.5vw, 1.25rem);
+/* ---------- Actions (inside the pinned stage) ---------- */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: clamp(1.5rem, 4vw, 3rem);
+  animation: actionsIn 0.6s 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes actionsIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  height: 3.25rem;
+  min-width: 10rem;
+  padding: 0 1.25rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.35s ease,
+    background 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+.btn:hover {
+  transform: translateY(-4px);
+}
+
+.btn:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--lagoon);
+  outline-offset: 5px;
+}
+
+.btnIcon {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: none;
+}
+
+.btnPrimary {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--void);
+  box-shadow: 0 8px 24px -18px rgba(240, 168, 90, 0.9);
+}
+
+.btnPrimary:hover {
+  background: #f5b97a;
+  border-color: #f5b97a;
+  box-shadow: 0 14px 28px -18px rgba(240, 168, 90, 0.9);
+}
+
+.btnGhost {
+  min-width: 12rem;
+  color: var(--bone);
+  background: rgba(63, 181, 192, 0.08);
+  border-color: rgba(63, 181, 192, 0.3);
+}
+
+.btnGhost:hover {
+  background: rgba(63, 181, 192, 0.15);
+  border-color: var(--lagoon);
+  box-shadow: 0 12px 24px -12px rgba(63, 181, 192, 0.5);
+}
+
+.arrow {
   color: var(--gold);
-  opacity: var(--n);
-  transform: translateY(calc((1 - var(--n)) * 14px));
+  font-size: 1.25rem;
+  line-height: 1;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.btnGhost:hover .arrow {
+  transform: translate(3px, -3px);
 }
 
 /* ---------- 2. Cards ---------- */
@@ -170,7 +256,7 @@
   transition: transform 0.25s ease-out;
 }
 
-/* Soft light inside the card, following the pointer */
+/* Soft light following the pointer */
 .card::before {
   content: "";
   position: absolute;
@@ -333,14 +419,12 @@
 }
 
 .viewport {
-  --skew: 0deg;
   width: 100%;
   overflow: hidden;
   cursor: grab;
   user-select: none;
   -webkit-user-select: none;
   touch-action: pan-y;
-  transform: skewX(var(--skew));
 }
 
 .viewport:active {
@@ -378,7 +462,7 @@
     -webkit-text-stroke-color 0.2s;
 }
 
-/* Diamond separator between words */
+/* Diamond separator */
 .item::after {
   content: "";
   flex: none;
@@ -399,294 +483,6 @@
   -webkit-text-stroke-color: var(--gold);
 }
 
-/* ---------- 4. Links ---------- */
-
-.downloadButton {
-  position: relative;
-  isolation: isolate;
-  display: inline-flex;
-  min-width: min(100%, 10rem);
-  height: 3.25rem;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  overflow: hidden;
-  padding: 0.75rem 1.25rem;
-  border: 1px solid var(--gold);
-  border-radius: 0.75rem;
-  background: var(--gold);
-  color: var(--void);
-  font: inherit;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  user-select: none;
-  transition:
-    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.35s ease,
-    background 0.35s ease,
-    box-shadow 0.35s ease;
-}
-
-:global(.downloadButton:hover:not(:disabled)) {
-  transform: translateY(-4px);
-  border-color: #f5b97a;
-  background: #f5b97a;
-  box-shadow: 0 14px 28px -18px rgba(240, 168, 90, 0.9);
-}
-
-:global(.downloadButton:active:not(:disabled)) {
-  transform: translateY(-1px) scale(0.98);
-}
-
-:global(.downloadButton:disabled) {
-  cursor: default;
-}
-
-.downloadButtonIcon {
-  position: relative;
-  z-index: 5;
-  width: 1rem;
-  height: 1rem;
-  flex: none;
-}
-
-.downloadButtonStatus {
-  position: relative;
-  z-index: 5;
-  display: inline-flex;
-  align-items: center;
-}
-
-.downloadButtonSpinner {
-  animation: downloadButtonSpin 1s linear infinite;
-}
-
-.downloadButtonProgress {
-  position: absolute;
-  z-index: 3;
-  inset: 0 auto 0 0;
-  background: rgba(255, 255, 255, 0.3);
-  pointer-events: none;
-  transition: width 0.2s ease-in-out;
-}
-
-@keyframes downloadButtonSpin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-
-.links {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  gap: 1rem;
-  padding-bottom: clamp(5rem, 9vw, 8rem);
-  padding-top: 2rem;
-}
-
-@media (max-width: 640px) {
-  .links {
-    padding-top: 4rem;
-  }
-}
-
-.actionLink {
-  position: relative;
-  isolation: isolate;
-  display: inline-flex;
-  min-width: min(100%, 18rem);
-  align-items: center;
-  gap: 0.85rem;
-  overflow: hidden;
-  padding: 0.85rem 1rem;
-  border: 1px solid rgba(241, 236, 228, 0.18);
-  border-radius: 0.85rem;
-  color: var(--bone);
-  text-decoration: none;
-  cursor: pointer;
-  transition:
-    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.35s ease,
-    background 0.35s ease,
-    box-shadow 0.35s ease;
-}
-
-.actionLink::before {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  content: "";
-  background: linear-gradient(115deg, rgba(240, 168, 90, 0.16), transparent 62%);
-  opacity: 0;
-  transform: translateX(-12%);
-  transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.actionLink:hover {
-  transform: translateY(-4px);
-  border-color: rgba(240, 168, 90, 0.7);
-  box-shadow: 0 14px 28px -18px rgba(240, 168, 90, 0.75);
-}
-
-.actionLink:hover::before {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.actionLink:active {
-  transform: translateY(-1px) scale(0.98);
-}
-
-.actionIcon,
-.contactPulse {
-  display: grid;
-  flex: 0 0 2.6rem;
-  width: 2.6rem;
-  height: 2.6rem;
-  place-items: center;
-  border-radius: 0.65rem;
-  background: var(--gold);
-  color: var(--void);
-}
-
-.actionIcon svg {
-  width: 1.15rem;
-  height: 1.15rem;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.7;
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.actionLink:hover .actionIcon svg {
-  transform: translateY(2px);
-}
-
-.actionCopy {
-  display: grid;
-  gap: 0.15rem;
-  min-width: 0;
-}
-
-.actionLabel {
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-.actionMeta {
-  color: var(--ash);
-  font-size: 0.75rem;
-  letter-spacing: 0.02em;
-}
-
-.actionArrow {
-  margin-left: auto;
-  color: var(--gold);
-  font-size: 1.35rem;
-  line-height: 1;
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.actionLink:hover .actionArrow {
-  transform: translate(3px, -3px);
-}
-
-.cvLink {
-  color: var(--void);
-  border-color: var(--gold);
-  background: var(--gold);
-  box-shadow: 0 8px 24px -18px rgba(240, 168, 90, 0.9);
-}
-
-.cvLink::before {
-  background: linear-gradient(115deg, rgba(255, 255, 255, 0.3), transparent 64%);
-}
-
-.cvLink .actionMeta,
-.cvLink .actionArrow {
-  color: rgba(4, 4, 5, 0.62);
-}
-
-.cvLink:hover {
-  color: var(--void);
-  border-color: #f5b97a;
-  background: #f5b97a;
-}
-
-.contactLink {
-  min-width: min(100%, 12rem);
-  height: 3.25rem;
-  padding: 0 1.25rem;
-  border: 1px solid rgba(63, 181, 192, 0.3);
-  border-radius: 0.75rem;
-  background: rgba(63, 181, 192, 0.08);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-.contactIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  color: var(--lagoon);
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.contactIcon svg {
-  width: 1.1rem;
-  height: 1.1rem;
-}
-
-.contactLink:hover {
-  border-color: var(--lagoon);
-  background: rgba(63, 181, 192, 0.15);
-  box-shadow: 0 12px 24px -12px rgba(63, 181, 192, 0.5);
-  transform: translateY(-4px);
-}
-
-.contactLink:hover .contactIcon {
-  transform: rotate(-6deg) scale(1.06);
-  background: rgba(63, 181, 192, 0.3);
-}
-
-.contactLink:hover .contactIcon svg {
-  transform: scale(1.1);
-}
-
-.contactLink::before {
-  background: linear-gradient(115deg, rgba(63, 181, 192, 0.2), transparent 65%);
-}
-
-.links a:focus-visible {
-  outline: 2px solid var(--lagoon);
-  outline-offset: 5px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .actionLink,
-  .actionLink::before,
-  .actionIcon svg,
-  .actionArrow,
-  .downloadButton,
-  .downloadButtonProgress,
-  .contactIcon,
-  .contactIcon svg {
-    transition: none;
-  }
-
-  .actionLink:hover,
-  .actionLink:active,
-  .actionLink:hover .actionArrow {
-    transform: none;
-  }
-}
-
 /* ---------- Responsive ---------- */
 
 @media (max-width: 900px) {
@@ -698,7 +494,7 @@
   }
 
   .stage {
-    height: 220vh;
+    height: 350vh;
   }
 }
 
@@ -709,6 +505,19 @@
 }
 
 /* ---------- Reduced motion: everything visible, nothing moves ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .arrow {
+    transition: none;
+  }
+
+  .btn:hover,
+  .btn:active,
+  .btnGhost:hover .arrow {
+    transform: none;
+  }
+}
 
 .reduced .stage {
   height: auto;
@@ -726,23 +535,11 @@
   opacity: 1;
 }
 
-.reduced .byline {
-  --n: 1;
+.reduced .actions {
+  animation: none;
 }
 
 .reduced .card {
   transform: none;
   transition: none;
-}
-
-.reduced .links,
-.reduced .links a,
-.reduced .links a::after,
-.reduced .links .arrow {
-  transition: none;
-  animation: none;
-}
-
-.reduced .links a:hover {
-  transform: none;
 }

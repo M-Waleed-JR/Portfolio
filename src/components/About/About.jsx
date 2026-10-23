@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import gsap from "gsap";
-import { CheckCircle, Download, Loader2, MessageCircle } from "lucide-react";
+import { CheckCircle, Download, MessageCircle } from "lucide-react";
 import { Bricolage_Grotesque } from "next/font/google";
 import { smoothScrollToId } from "@/lib/smoothScroll";
 import styles from "./About.module.css";
@@ -13,8 +12,11 @@ const bricolage = Bricolage_Grotesque({
   display: "swap",
 });
 
-const STATEMENT = `Hi, I am Mohamed Waleed — Jr Front-end developer. I build responsive interfaces with React and Next.js, and I care how every screen feels, from phone to desktop.`;
+const STATEMENT =
+  "Hi, I am Mohamed Waleed — Jr Front-end developer. I build responsive interfaces with React and Next.js, and I care how every screen feels, from phone to desktop.";
 const WORDS = STATEMENT.split(" ");
+
+const CV_URL = "/Mohamed_Waleed%20Alsayed_Front-End%20Developer%20_resume.pdf";
 
 const GROUPS = [
   {
@@ -82,6 +84,8 @@ const PROJECTS = [
 
 const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
 
+/* ---------- Reduced motion ---------- */
+
 const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
 
 function subscribeReducedMotion(callback) {
@@ -90,9 +94,9 @@ function subscribeReducedMotion(callback) {
   return () => mq.removeEventListener("change", callback);
 }
 
-function getReducedMotion() {
-  return window.matchMedia(REDUCED_QUERY).matches;
-}
+const getReducedMotion = () => window.matchMedia(REDUCED_QUERY).matches;
+
+/* ---------- Card tilt ---------- */
 
 function handleCard(e) {
   const el = e.currentTarget;
@@ -106,114 +110,89 @@ function handleCard(e) {
 }
 
 function resetCard(e) {
-  const el = e.currentTarget;
-  el.style.setProperty("--rx", "0deg");
-  el.style.setProperty("--ry", "0deg");
+  e.currentTarget.style.setProperty("--rx", "0deg");
+  e.currentTarget.style.setProperty("--ry", "0deg");
 }
 
+/* ---------- Skills marquee ---------- */
+
 function SkillsRow({ group, index }) {
-  const isEven = index % 2 === 0;
-  const dir = isEven ? 1 : -1;
+  const dir = index % 2 === 0 ? 1 : -1;
 
   const trackRef = useRef(null);
   const setRef = useRef(null);
   const [width, setWidth] = useState(0);
 
   const offsetRef = useRef(0);
-  const isHoveredRef = useRef(false);
-  const isDraggingRef = useRef(false);
+  const hoveredRef = useRef(false);
+  const draggingRef = useRef(false);
   const lastXRef = useRef(0);
 
   const items =
     group.items.length < 5 ? [...group.items, ...group.items] : group.items;
 
+  // Measure one copy of the list
   useEffect(() => {
     const el = setRef.current;
     if (!el) return;
 
     const measure = () => {
-      const w = el.offsetWidth;
-      if (w > 0) setWidth(w);
+      if (el.offsetWidth > 0) setWidth(el.offsetWidth);
     };
     measure();
 
-    const ro = new ResizeObserver(() => measure());
+    const ro = new ResizeObserver(measure);
     ro.observe(el);
-
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(measure);
-    }
+    document.fonts?.ready.then(measure);
 
     return () => ro.disconnect();
   }, []);
 
+  const render = (w) => {
+    if (!trackRef.current || w <= 0) return;
+    const mod = ((offsetRef.current % w) + w) % w;
+    trackRef.current.style.transform = `translate3d(${mod - w}px,0,0)`;
+  };
+
+  // Auto-scroll loop
   useEffect(() => {
-    if (!width || width <= 0) return;
+    if (width <= 0) return;
 
-    let rafId = 0;
-    let lastTime = performance.now();
     const speed = width / 50;
-
-    const updatePosition = () => {
-      if (trackRef.current && width > 0) {
-        const mod = ((offsetRef.current % width) + width) % width;
-        const pos = -2 * width + mod;
-        trackRef.current.style.transform = `translate3d(${pos}px,0,0)`;
-      }
-    };
+    let last = performance.now();
+    let rafId = 0;
 
     const frame = (now) => {
-      const dt = Math.min((now - lastTime) / 1000, 0.1);
-      lastTime = now;
-
-      if (!isDraggingRef.current && !isHoveredRef.current) {
+      const dt = Math.min((now - last) / 1000, 0.1);
+      last = now;
+      if (!draggingRef.current && !hoveredRef.current) {
         offsetRef.current += dir * speed * dt;
-        updatePosition();
+        render(width);
       }
-
       rafId = requestAnimationFrame(frame);
     };
 
-    updatePosition();
+    render(width);
     rafId = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(rafId);
   }, [width, dir]);
 
-  const handlePointerDown = (e) => {
-    isDraggingRef.current = true;
+  const onDown = (e) => {
+    draggingRef.current = true;
     lastXRef.current = e.clientX;
-    try {
-      e.currentTarget.setPointerCapture(e.pointerId);
-    } catch {}
+    e.currentTarget.setPointerCapture?.(e.pointerId);
   };
 
-  const handlePointerMove = (e) => {
-    if (!isDraggingRef.current) return;
-    const dx = e.clientX - lastXRef.current;
+  const onMove = (e) => {
+    if (!draggingRef.current) return;
+    offsetRef.current += e.clientX - lastXRef.current;
     lastXRef.current = e.clientX;
-    offsetRef.current += dx;
-
-    if (trackRef.current && width > 0) {
-      const mod = ((offsetRef.current % width) + width) % width;
-      const pos = -2 * width + mod;
-      trackRef.current.style.transform = `translate3d(${pos}px,0,0)`;
-    }
+    render(width);
   };
 
-  const handlePointerUp = (e) => {
-    isDraggingRef.current = false;
-    try {
-      e.currentTarget.releasePointerCapture(e.pointerId);
-    } catch {}
-  };
-
-  const handlePointerEnter = () => {
-    isHoveredRef.current = true;
-  };
-
-  const handlePointerLeave = () => {
-    isHoveredRef.current = false;
-    isDraggingRef.current = false;
+  const onUp = (e) => {
+    draggingRef.current = false;
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
   };
 
   return (
@@ -221,24 +200,27 @@ function SkillsRow({ group, index }) {
       <h4 className={styles.rowLabel}>{group.name}</h4>
       <div
         className={styles.viewport}
-        onPointerEnter={handlePointerEnter}
-        onPointerLeave={handlePointerLeave}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
+        onPointerEnter={() => (hoveredRef.current = true)}
+        onPointerLeave={() => {
+          hoveredRef.current = false;
+          draggingRef.current = false;
+        }}
+        onPointerDown={onDown}
+        onPointerMove={onMove}
+        onPointerUp={onUp}
+        onPointerCancel={onUp}
       >
         <div className={styles.track} ref={trackRef}>
-          {[0, 1, 2, 3].map((copyIndex) => (
+          {[0, 1, 2].map((copy) => (
             <ul
-              key={copyIndex}
+              key={copy}
               className={styles.set}
-              ref={copyIndex === 0 ? setRef : undefined}
-              aria-hidden={copyIndex > 0 ? "true" : undefined}
+              ref={copy === 0 ? setRef : undefined}
+              aria-hidden={copy > 0 ? "true" : undefined}
             >
               {items.map((item, j) => (
                 <li
-                  key={`${item}-${copyIndex}-${j}`}
+                  key={`${item}-${j}`}
                   className={`${styles.item} ${j % 2 === 1 ? styles.outline : ""}`}
                 >
                   {item}
@@ -252,34 +234,37 @@ function SkillsRow({ group, index }) {
   );
 }
 
+/* ---------- Section ---------- */
+
 export default function About() {
   const stageRef = useRef(null);
   const ghostRef = useRef(null);
   const wordRefs = useRef([]);
-  const cvLinkRef = useRef(null);
-  const contactLinkRef = useRef(null);
-  const linksRef = useRef(null);
-  const [downloadStatus, setDownloadStatus] = useState("idle");
-  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [downloaded, setDownloaded] = useState(false);
+
   const reduced = useSyncExternalStore(
     subscribeReducedMotion,
     getReducedMotion,
     () => false,
   );
 
+  // Scroll-driven statement: words light up one by one
   useEffect(() => {
     const stage = stageRef.current;
     if (!stage || reduced) return;
 
     let raf = 0;
-    const updateStatement = () => {
+
+    const update = () => {
       const rect = stage.getBoundingClientRect();
       const total = rect.height - window.innerHeight;
       const p = total > 0 ? clamp(-rect.top / total, 0, 1) : 1;
-      const q = clamp(p / 0.85, 0, 1) * WORDS.length;
+
+      const lit = clamp(p / 0.85, 0, 1) * WORDS.length;
       wordRefs.current.forEach((el, i) => {
-        if (el) el.style.setProperty("--l", clamp(q - i, 0, 1).toFixed(3));
+        if (el) el.style.setProperty("--l", clamp(lit - i, 0, 1).toFixed(3));
       });
+
       if (ghostRef.current) {
         ghostRef.current.style.transform = `translate3d(${-16 * p}vw,0,0)`;
       }
@@ -288,71 +273,30 @@ export default function About() {
     const onScroll = () => {
       if (raf) return;
       raf = requestAnimationFrame(() => {
-        updateStatement();
+        update();
         raf = 0;
       });
     };
 
-    updateStatement();
+    update();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", updateStatement);
+    window.addEventListener("resize", update);
 
     return () => {
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", updateStatement);
+      window.removeEventListener("resize", update);
       if (raf) cancelAnimationFrame(raf);
     };
   }, [reduced]);
 
-  /* ---------- Links entrance animation ---------- */
-  useEffect(() => {
-    if (reduced) return;
-
-    const cv = cvLinkRef.current;
-    const contact = contactLinkRef.current;
-    if (!cv || !contact) return;
-
-    gsap.fromTo(
-      [cv, contact],
-      { opacity: 0, y: 20, scale: 0.95 },
-      {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        duration: 0.6,
-        stagger: 0.1,
-        ease: "power3.out",
-        delay: 0.5,
-      },
-    );
-  }, [reduced]);
-
   const handleDownload = () => {
-    if (downloadStatus !== "idle") return;
-
-    setDownloadStatus("downloading");
-    setDownloadProgress(0);
-    const interval = setInterval(() => {
-      setDownloadProgress((current) => {
-        const next = Math.min(current + 5, 100);
-        if (next === 100) clearInterval(interval);
-        return next;
-      });
-    }, 50);
-
-    setTimeout(() => {
-      const link = document.createElement("a");
-      link.href =
-        "/Mohamed_Waleed%20Alsayed_Front-End%20Developer%20_resume.pdf";
-      link.download = "Mohamed_Waleed_CV.pdf";
-      link.click();
-      setDownloadStatus("downloaded");
-    }, 1050);
-
-    setTimeout(() => {
-      setDownloadStatus("idle");
-      setDownloadProgress(0);
-    }, 2200);
+    if (downloaded) return;
+    const link = document.createElement("a");
+    link.href = CV_URL;
+    link.download = "Mohamed_Waleed_CV.pdf";
+    link.click();
+    setDownloaded(true);
+    setTimeout(() => setDownloaded(false), 2000);
   };
 
   return (
@@ -361,12 +305,13 @@ export default function About() {
       aria-labelledby="about-title"
       className={`${styles.section} ${bricolage.className} ${reduced ? styles.reduced : ""}`}
     >
-      {/* 1. Pinned statement */}
+      {/* 1. Pinned statement + actions */}
       <div ref={stageRef} className={styles.stage}>
         <div className={styles.sticky}>
           <span ref={ghostRef} className={styles.ghost} aria-hidden="true">
             About
           </span>
+
           <div className={styles.statementWrap}>
             <h2 id="about-title" className={styles.statement}>
               <span className={styles.srOnly}>{STATEMENT}</span>
@@ -383,70 +328,36 @@ export default function About() {
                 </span>
               ))}
             </h2>
-          </div>
-        </div>
 
-        {/* 4. Links */}
-        <div className={styles.container}>
-          <div className={styles.links} ref={linksRef}>
-            <button
-              ref={cvLinkRef}
-              type="button"
-              onClick={handleDownload}
-              disabled={downloadStatus !== "idle"}
-              className={styles.downloadButton}
-              aria-label="Download CV"
-            >
-              {downloadStatus === "idle" && (
-                <>
-                  <Download
-                    className={styles.downloadButtonIcon}
-                    aria-hidden="true"
-                  />
-                  <span>Download My Cv</span>
-                </>
-              )}
-              {downloadStatus === "downloading" && (
-                <span className={styles.downloadButtonStatus}>
-                  <Loader2
-                    className={`${styles.downloadButtonIcon} ${styles.downloadButtonSpinner}`}
-                    aria-hidden="true"
-                  />
-                  {downloadProgress}%
+            <div className={styles.actions}>
+              <button
+                type="button"
+                onClick={handleDownload}
+                className={`${styles.btn} ${styles.btnPrimary}`}
+              >
+                {downloaded ? (
+                  <CheckCircle className={styles.btnIcon} aria-hidden="true" />
+                ) : (
+                  <Download className={styles.btnIcon} aria-hidden="true" />
+                )}
+                <span>{downloaded ? "Downloaded" : "Download My Cv"}</span>
+              </button>
+
+              <a
+                href="#contact"
+                onClick={(e) => {
+                  e.preventDefault();
+                  smoothScrollToId("contact");
+                }}
+                className={`${styles.btn} ${styles.btnGhost}`}
+              >
+                <MessageCircle className={styles.btnIcon} aria-hidden="true" />
+                <span>Contact Me</span>
+                <span className={styles.arrow} aria-hidden="true">
+                  →
                 </span>
-              )}
-              {downloadStatus === "downloaded" && (
-                <>
-                  <CheckCircle
-                    className={styles.downloadButtonIcon}
-                    aria-hidden="true"
-                  />
-                  <span>Downloaded</span>
-                </>
-              )}
-              {downloadStatus === "downloading" && (
-                <span
-                  className={styles.downloadButtonProgress}
-                  style={{ width: `${downloadProgress}%` }}
-                  aria-hidden="true"
-                />
-              )}
-            </button>
-            <a
-              ref={contactLinkRef}
-              href="#contact"
-              onClick={(event) => {
-                event.preventDefault();
-                smoothScrollToId("contact");
-              }}
-              className={`${styles.actionLink} ${styles.contactLink}`}
-            >
-              <MessageCircle size={18} className={styles.downloadButtonIcon} />
-              <span>Contact Me</span>
-              <span className={styles.actionArrow} aria-hidden="true">
-                →
-              </span>
-            </a>
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -501,7 +412,6 @@ export default function About() {
         <div className={styles.container}>
           <h3 className={styles.skillsTitle}>Skills</h3>
         </div>
-
         {GROUPS.map((group, i) => (
           <SkillsRow key={group.name} group={group} index={i} />
         ))}
