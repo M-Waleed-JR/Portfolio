@@ -45,7 +45,7 @@
     );
 }
 
-/* Film grain */
+/* Film grain (desktop only: blend modes are expensive on phones) */
 .section::after {
   content: "";
   position: absolute;
@@ -55,6 +55,12 @@
   mix-blend-mode: overlay;
   pointer-events: none;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+@media (max-width: 900px) {
+  .section::after {
+    display: none;
+  }
 }
 
 .container {
@@ -72,20 +78,15 @@
   white-space: nowrap;
 }
 
-/* ---------- 1. Pinned statement ---------- */
+/* ---------- 1. Statement ---------- */
 
-.stage {
-  height: 260vh;
-}
-
-.sticky {
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  height: 100svh;
+.hero {
+  position: relative;
   display: flex;
   align-items: center;
-  padding-inline: var(--gutter);
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: clamp(6rem, 14vw, 9rem) var(--gutter);
   overflow: hidden;
 }
 
@@ -102,6 +103,13 @@
   pointer-events: none;
   white-space: nowrap;
   will-change: transform;
+  animation: drift 20s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+  to {
+    transform: translate3d(-6vw, 0, 0);
+  }
 }
 
 .statementWrap {
@@ -121,19 +129,84 @@
   text-align: center;
 }
 
+/* Each word is masked; the inner span rises into view */
 .word {
-  --l: 0;
   display: inline-block;
+  vertical-align: top;
   margin-right: 0.26em;
-  /* always visible at 60%, fully opaque when lit */
-  opacity: calc(0.6 + 0.4 * var(--l));
-  text-shadow:
-    0 0 calc(var(--l) * 18px) rgba(240, 168, 90, var(--l)),
-    0 0 calc(var(--l) * 45px) rgba(240, 168, 90, calc(var(--l) * 0.65)),
-    0 0 calc(var(--l) * 90px) rgba(240, 168, 90, calc(var(--l) * 0.3));
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+  overflow: hidden;
 }
 
-/* ---------- Actions (inside the pinned stage) ---------- */
+.wordInner {
+  display: inline-block;
+  opacity: 0;
+  transform: translate3d(0, 110%, 0);
+}
+
+.shown .wordInner {
+  animation: rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) calc(var(--i) * 40ms)
+    forwards;
+}
+
+@keyframes rise {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Keywords: gold, with one light sweep after they appear */
+.key {
+  color: transparent;
+  background: linear-gradient(
+      100deg,
+      var(--gold) 0%,
+      var(--gold) 38%,
+      #fff1d9 50%,
+      var(--gold) 62%,
+      var(--gold) 100%
+    )
+    100% 0 / 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.shown .key {
+  animation:
+    rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) calc(var(--i) * 40ms) forwards,
+    sweep 1.4s ease-in-out calc(var(--i) * 40ms + 0.7s) forwards;
+}
+
+@keyframes sweep {
+  to {
+    background-position: 0 0;
+  }
+}
+
+/* Thin gold line that draws itself under the statement */
+.rule {
+  display: block;
+  width: min(14rem, 45%);
+  height: 1px;
+  margin: clamp(1.5rem, 3vw, 2.25rem) auto 0;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  transform: scaleX(0);
+}
+
+.shown .rule {
+  animation: draw 1s cubic-bezier(0.22, 1, 0.36, 1) calc(var(--count) * 40ms)
+    forwards;
+}
+
+@keyframes draw {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* ---------- Actions ---------- */
 
 .actions {
   display: flex;
@@ -141,14 +214,25 @@
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  margin-top: clamp(1.5rem, 4vw, 3rem);
-  animation: actionsIn 0.6s 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  margin-top: clamp(1.5rem, 3vw, 2.25rem);
+  opacity: 0;
+  pointer-events: none;
 }
 
-@keyframes actionsIn {
+.shown .actions {
+  pointer-events: auto;
+  animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1)
+    calc(var(--count) * 40ms + 0.3s) forwards;
+}
+
+@keyframes fadeUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 
@@ -492,10 +576,6 @@
     grid-column: 1 / -1;
     grid-row: auto;
   }
-
-  .stage {
-    height: 350vh;
-  }
 }
 
 @media (hover: none) {
@@ -507,8 +587,35 @@
 /* ---------- Reduced motion: everything visible, nothing moves ---------- */
 
 @media (prefers-reduced-motion: reduce) {
+  .ghost,
+  .wordInner,
+  .key,
+  .rule,
+  .actions {
+    animation: none !important;
+  }
+
+  .wordInner,
+  .actions {
+    opacity: 1;
+    transform: none;
+  }
+
+  .rule {
+    transform: none;
+  }
+
+  .key {
+    background-position: 0 0;
+  }
+
+  .actions {
+    pointer-events: auto;
+  }
+
   .btn,
-  .arrow {
+  .arrow,
+  .card {
     transition: none;
   }
 
@@ -517,29 +624,4 @@
   .btnGhost:hover .arrow {
     transform: none;
   }
-}
-
-.reduced .stage {
-  height: auto;
-}
-
-.reduced .sticky {
-  position: relative;
-  height: auto;
-  min-height: 70vh;
-  padding-block: 6rem;
-}
-
-.reduced .word {
-  --l: 1;
-  opacity: 1;
-}
-
-.reduced .actions {
-  animation: none;
-}
-
-.reduced .card {
-  transform: none;
-  transition: none;
 }

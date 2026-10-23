@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckCircle, Download, MessageCircle } from "lucide-react";
 import { Bricolage_Grotesque } from "next/font/google";
 import { smoothScrollToId } from "@/lib/smoothScroll";
@@ -14,7 +14,13 @@ const bricolage = Bricolage_Grotesque({
 
 const STATEMENT =
   "Hi, I am Mohamed Waleed — Jr Front-end developer. I build responsive interfaces with React and Next.js, and I care how every screen feels, from phone to desktop.";
-const WORDS = STATEMENT.split(" ");
+
+const KEYWORDS = new Set(["Front-end", "React", "Next.js"]);
+
+const WORDS = STATEMENT.split(" ").map((text) => ({
+  text,
+  key: KEYWORDS.has(text.replace(/[.,]$/, "")),
+}));
 
 const CV_URL = "/Mohamed_Waleed%20Alsayed_Front-End%20Developer%20_resume.pdf";
 
@@ -82,23 +88,10 @@ const PROJECTS = [
   },
 ];
 
-const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
-
-/* ---------- Reduced motion ---------- */
-
-const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
-
-function subscribeReducedMotion(callback) {
-  const mq = window.matchMedia(REDUCED_QUERY);
-  mq.addEventListener("change", callback);
-  return () => mq.removeEventListener("change", callback);
-}
-
-const getReducedMotion = () => window.matchMedia(REDUCED_QUERY).matches;
-
 /* ---------- Card tilt ---------- */
 
 function handleCard(e) {
+  if (e.pointerType !== "mouse") return;
   const el = e.currentTarget;
   const r = el.getBoundingClientRect();
   const x = e.clientX - r.left;
@@ -120,8 +113,10 @@ function SkillsRow({ group, index }) {
   const dir = index % 2 === 0 ? 1 : -1;
 
   const trackRef = useRef(null);
+  const viewportRef = useRef(null);
   const setRef = useRef(null);
   const [width, setWidth] = useState(0);
+  const visibleRef = useRef(false);
 
   const offsetRef = useRef(0);
   const hoveredRef = useRef(false);
@@ -148,6 +143,17 @@ function SkillsRow({ group, index }) {
     return () => ro.disconnect();
   }, []);
 
+  // Only animate while the row is on screen
+  useEffect(() => {
+    const el = viewportRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => {
+      visibleRef.current = entry.isIntersecting;
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   const render = (w) => {
     if (!trackRef.current || w <= 0) return;
     const mod = ((offsetRef.current % w) + w) % w;
@@ -165,7 +171,7 @@ function SkillsRow({ group, index }) {
     const frame = (now) => {
       const dt = Math.min((now - last) / 1000, 0.1);
       last = now;
-      if (!draggingRef.current && !hoveredRef.current) {
+      if (visibleRef.current && !draggingRef.current && !hoveredRef.current) {
         offsetRef.current += dir * speed * dt;
         render(width);
       }
@@ -199,6 +205,7 @@ function SkillsRow({ group, index }) {
     <div className={styles.rowBlock}>
       <h4 className={styles.rowLabel}>{group.name}</h4>
       <div
+        ref={viewportRef}
         className={styles.viewport}
         onPointerEnter={() => (hoveredRef.current = true)}
         onPointerLeave={() => {
@@ -237,57 +244,25 @@ function SkillsRow({ group, index }) {
 /* ---------- Section ---------- */
 
 export default function About() {
-  const stageRef = useRef(null);
-  const ghostRef = useRef(null);
-  const wordRefs = useRef([]);
+  const statementRef = useRef(null);
+  const [shown, setShown] = useState(false);
   const [downloaded, setDownloaded] = useState(false);
 
-  const reduced = useSyncExternalStore(
-    subscribeReducedMotion,
-    getReducedMotion,
-    () => false,
-  );
-
-  // Scroll-driven statement: words light up one by one
+  // Play the intro once, when the statement scrolls into view
   useEffect(() => {
-    const stage = stageRef.current;
-    if (!stage || reduced) return;
-
-    let raf = 0;
-
-    const update = () => {
-      const rect = stage.getBoundingClientRect();
-      const total = rect.height - window.innerHeight;
-      const p = total > 0 ? clamp(-rect.top / total, 0, 1) : 1;
-
-      const lit = clamp(p / 0.85, 0, 1) * WORDS.length;
-      wordRefs.current.forEach((el, i) => {
-        if (el) el.style.setProperty("--l", clamp(lit - i, 0, 1).toFixed(3));
-      });
-
-      if (ghostRef.current) {
-        ghostRef.current.style.transform = `translate3d(${-16 * p}vw,0,0)`;
-      }
-    };
-
-    const onScroll = () => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        update();
-        raf = 0;
-      });
-    };
-
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", update);
-
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", update);
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, [reduced]);
+    const el = statementRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        setShown(true);
+        io.disconnect();
+      },
+      { threshold: 0.35 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   const handleDownload = () => {
     if (downloaded) return;
@@ -303,61 +278,63 @@ export default function About() {
     <section
       id="about"
       aria-labelledby="about-title"
-      className={`${styles.section} ${bricolage.className} ${reduced ? styles.reduced : ""}`}
+      className={`${styles.section} ${bricolage.className} ${shown ? styles.shown : ""}`}
     >
-      {/* 1. Pinned statement + actions */}
-      <div ref={stageRef} className={styles.stage}>
-        <div className={styles.sticky}>
-          <span ref={ghostRef} className={styles.ghost} aria-hidden="true">
-            About
-          </span>
+      {/* 1. Statement */}
+      <div className={styles.hero}>
+        <span className={styles.ghost} aria-hidden="true">
+          About
+        </span>
 
-          <div className={styles.statementWrap}>
-            <h2 id="about-title" className={styles.statement}>
-              <span className={styles.srOnly}>{STATEMENT}</span>
-              {WORDS.map((word, i) => (
+        <div
+          ref={statementRef}
+          className={styles.statementWrap}
+          style={{ "--count": WORDS.length }}
+        >
+          <h2 id="about-title" className={styles.statement}>
+            <span className={styles.srOnly}>{STATEMENT}</span>
+            {WORDS.map((w, i) => (
+              <span key={i} className={styles.word} aria-hidden="true">
                 <span
-                  key={i}
-                  className={styles.word}
-                  aria-hidden="true"
-                  ref={(el) => {
-                    wordRefs.current[i] = el;
-                  }}
+                  className={`${styles.wordInner} ${w.key ? styles.key : ""}`}
+                  style={{ "--i": i }}
                 >
-                  {word}
+                  {w.text}
                 </span>
-              ))}
-            </h2>
+              </span>
+            ))}
+          </h2>
 
-            <div className={styles.actions}>
-              <button
-                type="button"
-                onClick={handleDownload}
-                className={`${styles.btn} ${styles.btnPrimary}`}
-              >
-                {downloaded ? (
-                  <CheckCircle className={styles.btnIcon} aria-hidden="true" />
-                ) : (
-                  <Download className={styles.btnIcon} aria-hidden="true" />
-                )}
-                <span>{downloaded ? "Downloaded" : "Download My Cv"}</span>
-              </button>
+          <span className={styles.rule} aria-hidden="true" />
 
-              <a
-                href="#contact"
-                onClick={(e) => {
-                  e.preventDefault();
-                  smoothScrollToId("contact");
-                }}
-                className={`${styles.btn} ${styles.btnGhost}`}
-              >
-                <MessageCircle className={styles.btnIcon} aria-hidden="true" />
-                <span>Contact Me</span>
-                <span className={styles.arrow} aria-hidden="true">
-                  →
-                </span>
-              </a>
-            </div>
+          <div className={styles.actions}>
+            <button
+              type="button"
+              onClick={handleDownload}
+              className={`${styles.btn} ${styles.btnPrimary}`}
+            >
+              {downloaded ? (
+                <CheckCircle className={styles.btnIcon} aria-hidden="true" />
+              ) : (
+                <Download className={styles.btnIcon} aria-hidden="true" />
+              )}
+              <span>{downloaded ? "Downloaded" : "Download My Cv"}</span>
+            </button>
+
+            <a
+              href="#contact"
+              onClick={(e) => {
+                e.preventDefault();
+                smoothScrollToId("contact");
+              }}
+              className={`${styles.btn} ${styles.btnGhost}`}
+            >
+              <MessageCircle className={styles.btnIcon} aria-hidden="true" />
+              <span>Contact Me</span>
+              <span className={styles.arrow} aria-hidden="true">
+                →
+              </span>
+            </a>
           </div>
         </div>
       </div>
