@@ -298,14 +298,6 @@ export default function Contact() {
                     </p>
                   </div>
                 </div>
-
-                <div className={styles.locationBadge}>
-                  <span
-                    className={styles.locationBadgeDot}
-                    aria-hidden="true"
-                  />
-                  <span>Available Worldwide</span>
-                </div>
               </div>
             </div>
 
