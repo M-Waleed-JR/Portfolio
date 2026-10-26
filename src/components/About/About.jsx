@@ -22,7 +22,7 @@ const WORDS = STATEMENT.split(" ").map((text) => ({
   key: KEYWORDS.has(text.replace(/[.,]$/, "")),
 }));
 
-const CV_URL = "/Mohamed_Waleed%20Alsayed_Front-End%20Developer%20_resume.pdf";
+const CV_URL = "/Mohamed_Waleed_CV.pdf";
 
 const GROUPS = [
   {

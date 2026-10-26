@@ -72,7 +72,7 @@ export default function Contact() {
   const getWhatsappLink = () => {
     const activeIntent = INQUIRY_INTENTS.find((i) => i.id === selectedIntent);
     const topic = activeIntent ? activeIntent.label : "a general inquiry";
-    const text = `Hi Waleed, I found your portfolio and I'd like to talk about: ${topic}`;
+    const text = `Hi Mohamed Waleed, I found your portfolio and I'd like to talk about: ${topic}`;
     return `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(text)}`;
   };
 
