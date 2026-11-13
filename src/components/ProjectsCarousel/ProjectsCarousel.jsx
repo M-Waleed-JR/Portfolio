@@ -42,7 +42,7 @@ const projects = [
     type: "Hotel Booking Website",
     description:
       "A hotel booking website built with HTML, CSS, and Vanilla JS.",
-    image: "/projects/Mazar.webp",
+    image: "/projects/mazar.webp",
     stack: ["HTML", "CSS", "JavaScript"],
     live: "https://mazar-seven.vercel.app/",
     github: "https://github.com/M-Waleed-JR/Mazar",
