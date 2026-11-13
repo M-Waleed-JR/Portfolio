@@ -22,6 +22,7 @@ const projects = [
     github: "https://github.com/M-Waleed-JR/Food-App",
     accent: "#ff987c",
   },
+
   {
     id: "nova",
     name: "Nova",
@@ -34,6 +35,20 @@ const projects = [
     github: "https://github.com/M-Waleed-JR/Nova",
     accent: "#800020",
   },
+
+  {
+    id: "Mazar",
+    name: "Mazar",
+    type: "Hotel Booking Website",
+    description:
+      "A hotel booking website built with HTML, CSS, and JavaScript.",
+    image: "/projects/Mazar.webp",
+    stack: ["HTML", "CSS", "JavaScript"],
+    live: "https://mazar-seven.vercel.app/",
+    github: "https://github.com/M-Waleed-JR/Mazar",
+    accent: "#55e6c1",
+  },
+
   {
     id: "weather",
     name: "Weather App",
@@ -45,6 +60,7 @@ const projects = [
     github: "https://github.com/M-Waleed-JR/Weather-App",
     accent: "#8ca8ff",
   },
+
   {
     id: "todo",
     name: "To-do List",
